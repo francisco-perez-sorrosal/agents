@@ -107,7 +107,7 @@ def main(user_query: str):
     
     # print(f"Tools: {data_fetch_agent.llm_config['tools']}")
     
-    review_analyzer_agent_system_message = """
+    review_extractor_agent_system_message = """
     You are an expert in analyzing reviews for restaurants.
     
     You receive a JSON object with the following format:
@@ -115,9 +115,19 @@ def main(user_query: str):
     { "Restaurant Name": ["Review 1", "Review 2", ..., "Review N"] }
     
     "Restaurant Name" and "Review 1" ... "Review N" are of type <string>.
-         
-    You must look at every single review from 1 to N, corresponding to the queried restaurant
-    and for each, extract two scores:
+
+    Traverse the list of reviews one by one and enumerate -starting with index 0- all reviews with the following format:
+    
+    <integer>: <review>    
+    """
+    review_analyzer_agent = ConversableAgent(
+        name="Restaurant Analyzer Agent",
+        system_message=review_extractor_agent_system_message,
+        llm_config=llm_config,
+    )
+
+    review_scorer_agent_system_message = """
+    You must look at every single review in the <integer> marked from from 1 to N, and for each one, extract two scores:
 
     1) food_score: the quality of food at the restaurant. This will be a score from 1-5.
     2) customer_service_score: the quality of customer service at the restaurant. This will be also a score from 1-5.
@@ -152,20 +162,29 @@ def main(user_query: str):
     1. Extract explicitly the keywords corresponding to food and customer service
     2. Based on the keywords extracted, create the score for food and customer service for that entry
     
-    Finally, aggregate each the food and customer service results in order and return a JSON object with this format:
+    """
+    review_scorer_agent = ConversableAgent(
+        name="Review Scorer Agent",
+        system_message=review_scorer_agent_system_message,
+        llm_config=llm_config,
+    )
+
+    review_formatter_agent_system_message = """
+    Finally, for each review, aggregate the food and customer service results in order and return a JSON object with this format:
     
     {
         'food_scores': [food_score_review_1, food_score_review_2, food_score_review_3, ..., food_score_review_N], 
         'customer_service_scores': [customer_service_score_review_1, customer_service_score_review_2, customer_service_score_review_3, ..., customer_service_score_review_N]
     }
     
+    Just return the raw JSON object.
     """
-    review_analyzer_agent = ConversableAgent(
-        name="Restaurant Analyzer Agent",
-        system_message=review_analyzer_agent_system_message,
+    review_formatter_agent = ConversableAgent(
+        name="Review Formatter Agent",
+        system_message=review_formatter_agent_system_message,
         llm_config=llm_config,
     )
-    
+        
     # Other formats
     # {
     #     'food_scores': [food_score_1, food_score_2, food_score_3, ..., food_score_N], 
@@ -196,8 +215,26 @@ def main(user_query: str):
             "max_turns": 1,
             "summary_method": "last_msg"
         },
-        
+        {
+            "recipient": review_scorer_agent,
+            "message": "This is the list of reviews for the restaurant.",
+            "clear_history": False,
+            "silent": False,
+            "max_turns": 1,
+            "summary_method": "last_msg"
+        },
+        {
+            "recipient": review_formatter_agent,
+            "message": "This is the list to format.",
+            "clear_history": False,
+            "silent": False,
+            "max_turns": 1,
+            "summary_method": "last_msg"
+        },        
     ])
+    
+    
+    
     # print(result)
     print(len(result))
     # print(result[-1].tool_responses)
