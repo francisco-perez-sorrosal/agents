@@ -73,6 +73,8 @@ def main(user_query: str):
     entrypoint_agent_system_message = """
     You critic of fast-food restaurants. 
     You will receive questions from users about a restaurant and you will answer them.
+    When you have all the information, answer the question in the best way possible 
+    and return 'TERMINATE'.
     """
     # example LLM config for the entrypoint agent
     llm_config = {"config_list": [{"model": "gpt-4o-mini", "api_key": os.environ.get("OPENAI_API_KEY")}]}
@@ -85,6 +87,9 @@ def main(user_query: str):
                                         llm_config=llm_config)
     # entrypoint_agent.register_for_llm(name="fetch_restaurant_data", description="Fetches the reviews for a specific restaurant.")(fetch_restaurant_data)
     entrypoint_agent.register_for_execution(name="fetch_restaurant_data")(fetch_restaurant_data)
+    entrypoint_agent.register_for_execution(name="calculate_overall_score")(calculate_overall_score)
+    
+    # Test the functions
     # fetch_restaurant_data("Applebee's")
     # print(calculate_overall_score("Applebee's", [1, 2, 3, 4, 5], [1, 2, 3, 4, 5]))
     
@@ -92,7 +97,7 @@ def main(user_query: str):
     # TODO
     # Create more agents here.
     data_fetch_agent_system_message = """
-    Fetch the review data for a restaurant.
+    Fetch the review data for a restaurant. If the restaurant is not found, return the closest name.
     Return 'TERMINATE' when the task is done.
     """
     data_fetch_agent = ConversableAgent(
@@ -184,6 +189,21 @@ def main(user_query: str):
         system_message=review_formatter_agent_system_message,
         llm_config=llm_config,
     )
+    
+    scoring_agent_system_message = """
+    From the food and customer service scoring data for the reviews of a restaurant, 
+    configure the call to calculate the overall score.
+    Return 'TERMINATE' when the task is done.
+    """
+    scoring_agent = ConversableAgent(
+        name="Data Fetch Agent",
+        system_message=scoring_agent_system_message,
+        llm_config=llm_config,
+        max_consecutive_auto_reply=1,
+        human_input_mode="NEVER",
+    )
+    scoring_agent.register_for_llm(name="calculate_overall_score", description="Calculates the overall score for the reviews for a specific restaurant.")(calculate_overall_score)
+    
         
     # Other formats
     # {
@@ -230,7 +250,15 @@ def main(user_query: str):
             "silent": False,
             "max_turns": 1,
             "summary_method": "last_msg"
-        },        
+        },
+        {
+            "recipient": scoring_agent,
+            "message": "These are the scores for the reviews of the restaurant.",
+            "clear_history": False,
+            "silent": False,
+            "max_turns": 2,
+            "summary_method": "last_msg"
+        }, 
     ])
     
     
@@ -262,12 +290,15 @@ def main(user_query: str):
     
 # DO NOT modify this code below.
 if __name__ == "__main__":
+    # assert len(sys.argv) > 1, "Please ensure you include a query for some restaurant when executing main."
+    # main(sys.argv[1])
+    
     from dotenv import find_dotenv, load_dotenv
     load_dotenv(find_dotenv())
     try:
         assert len(sys.argv) > 1, "Please ensure you include a query for some restaurant when executing main."
         user_query = sys.argv[1]
     except AssertionError as e:
-        user_query = "How good is the food at McDonald's?"
-    # main(sys.argv[1])
-    main(user_query)
+        user_query = "What is the overall score for In N Out?"
+        user_query = "How good is the restaurant Chick-fil-A overall?"
+    main(user_query)    

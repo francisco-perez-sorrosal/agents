@@ -9,4 +9,8 @@ pyenv local agents-berkeley-course-lab1
 pip install -r requirements.txt
 # Execute
 python main.py
+# Tests
+python test.py
+# Clean the autogen cache with
+# rm -rf .cache
 ```
