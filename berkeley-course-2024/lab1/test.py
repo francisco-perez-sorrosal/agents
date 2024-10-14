@@ -20,6 +20,7 @@ def contains_num_with_tolerance(text: str, pattern: float, tolerance: float=0) -
     nums = re.findall(r'\d*\.\d{3}', text)
     nums = [float(num) for num in nums]
     pattern_matches = [num for num in nums if abs(num - pattern) <= tolerance]
+    print(f"Pattern Matches: {pattern_matches} in content")
     return len(pattern_matches) >= 1
     
 def public_tests():
@@ -44,6 +45,7 @@ def public_tests():
     num_passed = 0
     for i, content in enumerate(contents):
         if not contains_num_with_tolerance(content, query_results[i], tolerance=tolerances[i]):
+            # print(f"Content {content}")
             print(TerminalColors.RED + f"Test {i+1} Failed." + TerminalColors.RESET, "Expected: ", query_results[i], "Query: ", queries[i])
         else:
             print(TerminalColors.GREEN + f"Test {i+1} Passed." + TerminalColors.RESET, "Expected: ", query_results[i], "Query: ", queries[i])
