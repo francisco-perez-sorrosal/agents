@@ -105,10 +105,7 @@ def main(user_query: str):
                                         human_input_mode="NEVER",  # Added by FPS
                                         max_consecutive_auto_reply=4,
                                         llm_config=llm_config)
-    # entrypoint_agent.register_for_llm(name="fetch_restaurant_data", description="Fetches the reviews for a specific restaurant.")(fetch_restaurant_data)
-    # entrypoint_agent.register_for_execution(name="fetch_restaurant_data")(fetch_restaurant_data)
-    # entrypoint_agent.register_for_llm(name="fetch_restaurant_names", description="Fetches the names for a specific restaurant.")(fetch_restaurant_names)    
-    # entrypoint_agent.register_for_execution(name="fetch_restaurant_names")(fetch_restaurant_names)    
+    # The entrypoint agent should be able to execute the following function calls.
     entrypoint_agent.register_for_execution(name="calculate_overall_score")(calculate_overall_score)
     
     # Test the functions
@@ -119,7 +116,19 @@ def main(user_query: str):
     # TODO
     # Create more agents here.    
     
-    data_fetch_agent_system_message = """
+    ###########################################################################
+    ### Data Fetch Agent
+    ###########################################################################
+    # Composed of two agents: 
+    # 1st for fetching the restaurant data and the restaurant names.
+    # 2nd to configure the fetching and the restaurant names call.
+    # Both agents are part of a group chat.
+    #
+    # Arguably this could be implemented as a single agent, but here we use the concept of group chat for solving
+    # the problem of fetching the restaurant reviews when potentially the name of the restaurant is not exactly the same
+    # as in the list of reviewed restaurants.
+    
+    restaurant_info_fetcher_agent_system_message = """
     Fetches review data for a particular restaurant, invoking the tools available for fetching restaurant data.
     When you get an empty list of reviews when fetching the restaurant data, the name 
     of the restaurant was probably mispelled. 
@@ -128,35 +137,35 @@ def main(user_query: str):
     name passed by the user. When you got it, return the list of reviews.
     Return the list of reviews only.
     """        
-    data_fetch_agent = ConversableAgent(
+    restaurant_info_fetcher_agent = ConversableAgent(
         name="Data_Fetch_Agent",
-        system_message=data_fetch_agent_system_message,
+        system_message=restaurant_info_fetcher_agent_system_message,
         llm_config=llm_config,
         max_consecutive_auto_reply=10,
         silent=False,
         human_input_mode="NEVER",
     )
-    data_fetch_agent.register_for_execution(name="fetch_restaurant_data")(fetch_restaurant_data)
-    data_fetch_agent.register_for_execution(name="fetch_restaurant_names")(fetch_restaurant_names)        
+    # The retriever agent should be able to execute the fetching function calls for reviews and restaurant names.
+    restaurant_info_fetcher_agent.register_for_execution(name="fetch_restaurant_data")(fetch_restaurant_data)
+    restaurant_info_fetcher_agent.register_for_execution(name="fetch_restaurant_names")(fetch_restaurant_names)        
     
-    data_retriever_agent_system_message = """
+    fetcher_fn_config_agent_system_message = """
     Configure the fetching call and fetch review data for a particular restaurant.
     """    
-    data_retriever_agent = ConversableAgent(
+    fetcher_fn_config_agent = ConversableAgent(
         name="Data_Retriever_Agent",
-        system_message=data_retriever_agent_system_message,
+        system_message=fetcher_fn_config_agent_system_message,
         llm_config=llm_config,
         max_consecutive_auto_reply=2,
         human_input_mode="NEVER",
     )
-    data_retriever_agent.register_for_llm(name="fetch_restaurant_data", description="Fetches the reviews for a specific restaurant.")(fetch_restaurant_data)
-    # data_retriever_agent.register_for_execution(name="fetch_restaurant_data")(fetch_restaurant_data)
-    data_retriever_agent.register_for_llm(name="fetch_restaurant_names", description="Fetches the names for a specific restaurant.")(fetch_restaurant_names)    
-    # data_retriever_agent.register_for_execution(name="fetch_restaurant_names")(fetch_restaurant_names)    
+    # The fetcher fn config agent should be able to suggest the following function calls.
+    fetcher_fn_config_agent.register_for_llm(name="fetch_restaurant_data", description="Fetches the reviews for a specific restaurant.")(fetch_restaurant_data)
+    fetcher_fn_config_agent.register_for_llm(name="fetch_restaurant_names", description="Fetches the names for a specific restaurant.")(fetch_restaurant_names)    
 
-
+    # The group chat for the fetcher agents
     fetcher_groupchat = GroupChat(
-        agents=[data_fetch_agent, data_retriever_agent],
+        agents=[restaurant_info_fetcher_agent, fetcher_fn_config_agent],
         messages=[],
         max_round=6,
         speaker_selection_method="round_robin",
@@ -165,52 +174,10 @@ def main(user_query: str):
     
     )
     fetcher_manager = GroupChatManager(groupchat=fetcher_groupchat, llm_config=llm_config)
-
     
-    # data_fetch_fixer_agent_system_message = """
-    # Configure the fetching call to get review data for a particular restaurant.
-    # When you get an empty list of reviews for a particular restaurant configure the tool 
-    # to fetch the list of available restaurant names.
-    # Wnen you have the list of available restaurant names, configure the fetching call to
-    # get review data for the closest restaurant name to the original one.
-    # If you receive a JSON object with proper reviews for a restaurant, get the results of
-    # the last tool call and copy it back unmodified.
-    # """    
-    # data_fetch_fixer_agent = ConversableAgent(
-    #     name="Data Fetch Fixer Agent",
-    #     system_message=data_fetch_fixer_agent_system_message,
-    #     llm_config=llm_config,
-    #     max_consecutive_auto_reply=1,
-    #     human_input_mode="NEVER",
-    # )
-    
-    def retriever_message(recipient, messages, sender, config):
-        return f"""Retrieve restaurant data to answer this question.
-        {recipient.chat_messages_for_summary(sender)[-1]['content']}
-        """        
-        
-    # def retriever_message2(recipient, messages, sender, config):
-    #     return f"""Retrieve tool data this question.
-    #     {recipient.chat_messages_for_summary(sender)}
-    #     """
-
-    # fetcher_nested_chat_queue = [
-    #     {"recipient": data_retriever_agent, "message": retriever_message, "summary_method": "last_msg", "max_turns": 2 },
-    #     # {"recipient": data_retriever_agent, "message": retriever_message2, "summary_method": None, "max_turns": 1 },
-    #     # {"recipient": data_fetch_fixer_agent, "summary_method": "last_msg", "max_turns": 1},
-    #     # {"recipient": writer, "message": writing_message, "summary_method": "last_msg", "max_turns": 1},
-    # ]
-    # data_fetch_agent.register_nested_chats(
-    #     fetcher_nested_chat_queue,
-    #     trigger=entrypoint_agent,
-    # )
-    
-    # data_fetch_agent.register_for_execution(name="Configure the fetching call to gettaurant_names")(fetch_restaurant_names)    or
-    
-    # data_fetch_agent.register_for_execution(name="fetch_restaurant_data")(fetch_restaurant_data)
-    
-    # print(f"Tools: {data_fetch_agent.llm_config['tools']}")
-    
+    ###########################################################################
+    ### Review Extractor Agent
+    ###########################################################################
     review_extractor_agent_system_message = """
     You are an expert in analyzing reviews for restaurants.
     
@@ -230,6 +197,9 @@ def main(user_query: str):
         llm_config=llm_config,
     )
 
+    ###########################################################################
+    ### Review Scorer Agent
+    ###########################################################################
     review_scorer_agent_system_message = """
     You must look at every single review in the <integer> marked from from 1 to N, and for each one, extract two scores:
 
@@ -273,6 +243,9 @@ def main(user_query: str):
         llm_config=llm_config,
     )
 
+    ###########################################################################
+    ### Review Formater Agent
+    ###########################################################################
     review_formatter_agent_system_message = """
     Finally, for each review, aggregate the food and customer service results in order and return a JSON object with this format:
     
@@ -289,45 +262,35 @@ def main(user_query: str):
         llm_config=llm_config,
     )
     
-    scoring_agent_system_message = """
+    ###########################################################################
+    ### Overall Scoring Agent
+    ###########################################################################
+    overall_scoring_agent_system_message = """
     From the food and customer service scoring data for the reviews of a restaurant, 
     configure the call to calculate the overall score.
     If the final score doesn't have at least three decimals, complete with zeros up to three decimals.
     Provide the answer and return 'TERMINATE' when the task is done.
     """
-    scoring_agent = ConversableAgent(
+    overall_scoring_agent = ConversableAgent(
         name="Scoring Agent",
-        system_message=scoring_agent_system_message,
+        system_message=overall_scoring_agent_system_message,
         llm_config=llm_config,
         max_consecutive_auto_reply=2,
         human_input_mode="NEVER",
     )
-    scoring_agent.register_for_llm(name="calculate_overall_score", description="Calculates the overall score for the reviews for a specific restaurant.")(calculate_overall_score)
-    
+    overall_scoring_agent.register_for_llm(name="calculate_overall_score", description="Calculates the overall score for the reviews for a specific restaurant.")(calculate_overall_score)
         
-    # Other formats
-    # {
-    #     'food_scores': [food_score_1, food_score_2, food_score_3, ..., food_score_N], 
-    #     'customer_service_scores': [customer_service_score_1, customer_service_score_2, customer_service_score_3, ..., customer_service_score_N]
-    # }
-
-    # review, food_keywords, customer_service_keywords, food_score, customer_service_score
-    
     # TODO
     # Fill in the argument to `initiate_chats` below, calling the correct agents sequentially.
     # If you decide to use another conversation pattern, feel free to disregard this code.
 
-    def last_tool_messgage(
+    def last_tool_message(
         sender: ConversableAgent,
         recipient: ConversableAgent,
         summary_args: dict,
     ):
         # print("*-*" * 50)
-        # print(type(sender))
-        # print(type(recipient))
-        # print(type(summary_args))
         # print(sender.name, recipient.name)
-        # print(recipient.chat_messages)
         # print(recipient.chat_messages)
         # print(recipient.chat_messages_for_summary(sender))
         messages = recipient.chat_messages_for_summary(sender)
@@ -350,7 +313,7 @@ def main(user_query: str):
             "clear_history": False,
             "silent": False,
             "max_turns": 1,
-            "summary_method": last_tool_messgage,
+            "summary_method": last_tool_message,
         },
         {
             "recipient": review_analyzer_agent,
@@ -377,29 +340,20 @@ def main(user_query: str):
             "summary_method": "last_msg"
         },
         {
-            "recipient": scoring_agent,
+            "recipient": overall_scoring_agent,
             "message": "These are the scores for the reviews of the restaurant.",
             "clear_history": False,
             "silent": False,
-            "max_turns": 2,
+            "max_turns": 2,  # Set to 2, in order to also allow the agent return the final score as text
             "summary_method": "last_msg"
         }, 
     ])
     
-    
-    
-    # print(result)
-    print(len(result))
-    # print(result[-1].tool_responses)
-    # print(f"Last message of entrypoint agent:")
-    # print(entrypoint_agent.last_message())
+    print("=" * 50)
+    print(f"Results ({len(result)}\n{result[-1]}")
+    print("=" * 50)
     # print(f"Last message of fetch agent:")
     # print(data_fetch_agent.last_message())
-
-    # print(f"Last message of review_analyzer agent:")
-    # print(review_analyzer_agent.last_message())
-    
-    result = review_analyzer_agent.last_message()
     
     # Alternative way to register the fetch_restaurant_data function with the two agents.
     # from autogen import register_function
@@ -415,16 +369,16 @@ def main(user_query: str):
     
 # DO NOT modify this code below.
 if __name__ == "__main__":
-    assert len(sys.argv) > 1, "Please ensure you include a query for some restaurant when executing main."
-    main(sys.argv[1])
+    # assert len(sys.argv) > 1, "Please ensure you include a query for some restaurant when executing main."
+    # main(sys.argv[1])
     
-    # from dotenv import find_dotenv, load_dotenv
-    # load_dotenv(find_dotenv())
-    # try:
-    #     assert len(sys.argv) > 1, "Please ensure you include a query for some restaurant when executing main."
-    #     user_query = sys.argv[1]
-    # except AssertionError as e:
-    #     user_query = "What is the overall score for taco bell?"
-    #     # user_query = "What is the overall score for In N Out?"
-    #     user_query = "How good is the restaurant Chick-fil-A overall?"
-    # main(user_query)    
+    from dotenv import find_dotenv, load_dotenv
+    load_dotenv(find_dotenv())
+    try:
+        assert len(sys.argv) > 1, "Please ensure you include a query for some restaurant when executing main."
+        user_query = sys.argv[1]
+    except AssertionError as e:
+        user_query = "What is the overall score for taco bell?"
+        user_query = "What is the overall score for In N Out?"
+        # user_query = "How good is the restaurant Chick-fil-A overall?"
+    main(user_query)    
