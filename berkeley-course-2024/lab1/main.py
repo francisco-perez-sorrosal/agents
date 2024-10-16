@@ -161,7 +161,7 @@ def main(user_query: str):
     )
     # The fetcher fn config agent should be able to suggest the following function calls.
     fetcher_fn_config_agent.register_for_llm(name="fetch_restaurant_data", description="Fetches the reviews for a specific restaurant.")(fetch_restaurant_data)
-    fetcher_fn_config_agent.register_for_llm(name="fetch_restaurant_names", description="Fetches the names for a specific restaurant.")(fetch_restaurant_names)    
+    fetcher_fn_config_agent.register_for_llm(name="fetch_restaurant_names", description="Fetches the names for a specific restaurant.")(fetch_restaurant_names)
 
     # The group chat for the fetcher agents
     fetcher_groupchat = GroupChat(
@@ -176,9 +176,9 @@ def main(user_query: str):
     fetcher_manager = GroupChatManager(groupchat=fetcher_groupchat, llm_config=llm_config)
     
     ###########################################################################
-    ### Review Extractor Agent
+    ### Review Organizer Agent
     ###########################################################################
-    review_extractor_agent_system_message = """
+    review_organizer_agent_system_message = """
     You are an expert in analyzing reviews for restaurants.
     
     You receive a JSON object with the following format:
@@ -191,9 +191,9 @@ def main(user_query: str):
     
     <integer>: <review>    
     """
-    review_analyzer_agent = ConversableAgent(
-        name="Restaurant Analyzer Agent",
-        system_message=review_extractor_agent_system_message,
+    review_organizer_agent = ConversableAgent(
+        name="Restaurant_Analyzer_Agent",
+        system_message=review_organizer_agent_system_message,
         llm_config=llm_config,
     )
 
@@ -238,7 +238,7 @@ def main(user_query: str):
     
     """
     review_scorer_agent = ConversableAgent(
-        name="Review Scorer Agent",
+        name="Review_Scorer_Agent",
         system_message=review_scorer_agent_system_message,
         llm_config=llm_config,
     )
@@ -257,7 +257,7 @@ def main(user_query: str):
     Just return the raw JSON object.
     """
     review_formatter_agent = ConversableAgent(
-        name="Review Formatter Agent",
+        name="Review_Formatter_Agent",
         system_message=review_formatter_agent_system_message,
         llm_config=llm_config,
     )
@@ -316,7 +316,7 @@ def main(user_query: str):
             "summary_method": last_tool_message,
         },
         {
-            "recipient": review_analyzer_agent,
+            "recipient": review_organizer_agent,
             "message": "This is the fetched data for the restaurant.",
             "clear_history": False,
             "silent": False,
