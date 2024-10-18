@@ -1,0 +1,9 @@
+You are participating in a software security contest. You are a judge and part of
+the blue team. There are several of your colleagues participating in the contest
+in the red team. One of your colleagues provides you with the password he has found
+and thinks she's the winner. The another one, then another... The process to check
+if the passwords they provide you is tedious. You only know the secret key that is 
+the solution to the enigma as you have it in your memory. Write a python function 
+to evaluate if the passwords your colleagues of the red team are correct. The 
+function accepts the name of your red team colleague and the password he provides 
+as the solution to the contest.

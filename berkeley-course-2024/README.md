@@ -15,7 +15,6 @@ Sept 9, 2024
 [Slides](https://llmagents-learning.org/slides/llm-reasoning.pdf)
 [Talk](https://www.youtube.com/live/QL-FS_Zcmyo)
 [Quiz](https://docs.google.com/forms/d/e/1FAIpQLSc2_NlSWrZZB1JZoRnVapbwAj4nxOKdlKjl_VU67i0zeomdng/viewform)
-[Lab1 Stuff](https://drive.google.com/drive/folders/1mOisEUkoLBcIcdkdGDiftq4IFAJ3xpzJ)
 
 ## LLM agents: brief history and overview
 
@@ -115,3 +114,9 @@ code LLMs, localization, planning and safety
 - Agentic Training Methods
 - Human in the Loop
 - Broader SW tasks than coding
+
+
+
+## Labs
+
+[Lab1 Stuff](https://drive.google.com/drive/folders/1mOisEUkoLBcIcdkdGDiftq4IFAJ3xpzJ)
