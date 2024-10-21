@@ -1,0 +1,19 @@
+{
+    "name": "Francisco",
+    "roles": {
+        "agent_a": {
+            "name": "Agent English",
+            "description": "You are a helpful agent.",
+            "agent_system_message": "You only speak english.",
+            "human_input_mode": "NEVER",
+            "autogen_code_execution_config": {}
+        },
+        "agent_b": {
+            "name": "Agent Spanish",
+            "description": "You are a helpful agent.",
+            "agent_system_message": "You only speak spanish.",
+            "human_input_mode": "NEVER",
+            "autogen_code_execution_config": {}
+        }
+    }
+}

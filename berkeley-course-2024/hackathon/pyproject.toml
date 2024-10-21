@@ -1,0 +1,23 @@
+[project]
+authors = [{name = "Francisco Perez-Sorrosal", email = "fperezsorrosal@gmail.com"}]
+description = "Add a short description here"
+name = "hackathon"
+requires-python = ">= 3.11,<3.13"
+version = "0.1.0"
+dependencies = ["swarm @ git+ssh://git@github.com/openai/swarm.git", "llm-foundation==0.0.12"]
+
+[build-system]
+build-backend = "hatchling.build"
+requires = ["hatchling"]
+
+[tool.pixi.project]
+channels = ["conda-forge"]
+platforms = ["osx-arm64"]
+
+[tool.pixi.pypi-dependencies]
+hackathon = { path = ".", editable = true }
+
+[tool.pixi.tasks]
+
+[tool.hatch.metadata]
+allow-direct-references = true
