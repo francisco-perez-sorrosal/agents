@@ -11,14 +11,13 @@ logger.info(francisco)
 logger.info(francisco.get_roles())
 
 
-
 client = Swarm()
 
 def transfer_to_spanish_agent():
     """Transfer spanish speaking users immediately."""
     return agent_b
 
-agent_a_role: Role  = francisco.roles["agent_a"]
+agent_a_role: Role = francisco.roles["agent_a"]
 agent_a = Agent(
     name=agent_a_role.name,
     instructions=agent_a_role.agent_system_message,

@@ -4,7 +4,7 @@ description = "Add a short description here"
 name = "hackathon"
 requires-python = ">= 3.11,<3.13"
 version = "0.1.0"
-dependencies = ["swarm @ git+ssh://git@github.com/openai/swarm.git", "llm-foundation==0.0.12"]
+dependencies = ["swarm @ git+ssh://git@github.com/openai/swarm.git", "langchain>=0.2.16,<0.3", "llm-foundation==0.0.15"]
 
 [build-system]
 build-backend = "hatchling.build"
@@ -18,6 +18,9 @@ platforms = ["osx-arm64"]
 hackathon = { path = ".", editable = true }
 
 [tool.pixi.tasks]
+
+[tool.pixi.dependencies]
+pypdf = ">=5.0.1,<6"
 
 [tool.hatch.metadata]
 allow-direct-references = true
