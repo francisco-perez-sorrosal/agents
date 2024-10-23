@@ -15,7 +15,8 @@ OpenAI: GPT-4o for (LLM) and text-embedding-small
 cd berkeley-course-2024/hackathon
 pixi install
 # Run agent
-pixi run python src/hackathon/main.py
+pixi run python src/hackathon/basic_oai_swarm.py
+pixi run python src/hackathon/graph_creation_oai_swarm.py
 ```
 
 ### Development
