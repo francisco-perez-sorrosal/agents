@@ -21,6 +21,7 @@ hackathon = { path = ".", editable = true }
 
 [tool.pixi.dependencies]
 pypdf = ">=5.0.1,<6"
+faiss = ">=1.8.0,<2"
 
 [tool.hatch.metadata]
 allow-direct-references = true

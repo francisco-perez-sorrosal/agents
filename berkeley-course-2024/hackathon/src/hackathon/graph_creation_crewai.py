@@ -1,7 +1,8 @@
 import json
 import pprint
+import pickle
 
-from typing import List
+from typing import Dict, List, Literal
 
 from crewai import Agent, Task, Crew
 from crewai.crews import CrewOutput
@@ -14,12 +15,37 @@ from rich.pretty import pprint
 from hackathon.tools import load_pdf, split_text
 
 
-text = load_pdf()
-chunks = split_text(text)
+document_name = "2405.14831v1.pdf"
 
-logger.info("--------------------------------------------------------------------------------")
-logger.info(f"Number of chunks: {len(chunks)}")
-logger.info("--------------------------------------------------------------------------------")
+def save_document_structure(document_chunks: List[dict], output_file: str, format: Literal["pickle", "json"] = "pickle"):
+        logger.info(f"Saving document structure to {output_file}")
+        match format:
+            case "pickle":
+                with open(output_file, "wb") as f:
+                    pickle.dump(document_chunks, f)
+            case "json":
+                with open(output_file, "w") as f:
+                    json.dump(document_chunks, f, indent=4)
+            case _:
+                raise ValueError(f"Invalid format: {format}")
+
+
+def build_document_structure(document_path: str) -> List[Dict]:
+    text = load_pdf(document_path)
+    chunks = split_text(text)
+    document_chunks: List[Dict] = [ { "id":idx, "text":chunk.page_content } for idx, chunk in enumerate(chunks[:1])]  # TODO Remove this [:1] filter!!!! Just for testing
+    assert len(document_chunks) == 1, f"Number of chunks mismatch: {len(document_chunks)} is not 1"  # TODO Remove this assert!!!! Just for testing
+    logger.info("--------------------------------------------------------------------------------")
+    logger.info(f"Number of chunks: {len(chunks)}")
+    logger.info("--------------------------------------------------------------------------------")
+    return document_chunks
+
+
+########################################################################################
+### Here starts everything...
+########################################################################################
+
+document_chunks = build_document_structure(document_name)
 
 entity_master = Persona.from_yaml_file("Personas/EntityMasterCrewAI.yaml")
 entity_extractor_role: Role = entity_master.get_role("entity_extractor")
@@ -63,17 +89,31 @@ crew = Crew(
     verbose=True,
 )
 
-single_chunk = chunks[0].page_content
+def extend_document_chunks_with_entities_and_triples(document_chunks: List[Dict]) -> List[Dict]:
 
-graph_creation_inputs = {
-    "paragraph": single_chunk,
-    "entity_extractor_examples": entity_extractor_role.get_examples_as_str(),
-    "triple_extractor_examples": triple_extractor_role.get_examples_as_str(),
-}
+    for chunk in document_chunks:
 
-result: CrewOutput = crew.kickoff(inputs=graph_creation_inputs)
+        graph_creation_inputs = {
+            "paragraph": chunk["text"],
+            "entity_extractor_examples": entity_extractor_role.get_examples_as_str(),
+            "triple_extractor_examples": triple_extractor_role.get_examples_as_str(),
+        }
 
-logger.info(".................................................................................")
-logger.info(type(result))
-logger.info(pprint(json.loads(result.json)))
-logger.info(".................................................................................")
+        logger.info("^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Calling Agents ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
+        result: CrewOutput = crew.kickoff(inputs=graph_creation_inputs)
+
+        logger.info(".................................................................................")
+        logger.info(type(result))
+        logger.info(pprint(json.loads(result.json)))
+        logger.info(".................................................................................")
+        
+        result_dict = json.loads(result.json)
+        chunk["named_entities"] = result_dict["named_entities"]
+        chunk["triples"] = result_dict["triples"]
+    
+    return document_chunks
+
+
+document_chunks = extend_document_chunks_with_entities_and_triples(document_chunks)
+
+save_document_structure(document_chunks, f"{document_name.rsplit(".", 1)[0]}_document_structure.pkl")
