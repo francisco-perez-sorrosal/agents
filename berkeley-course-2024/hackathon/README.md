@@ -4,6 +4,7 @@
 
 ### Dependencies
 
+Crew AI
 Neo4j: GraphDB / Vector DB (Aura cloud)
 OpenAI: GPT-4o for (LLM) and text-embedding-small
 
@@ -16,11 +17,23 @@ OpenAI: GPT-4o for (LLM) and text-embedding-small
 ```sh
 cd berkeley-course-2024/hackathon
 pixi install
-# Run agent
+ATTENTION (INTENTIONAL BREAK): Fill out YOUR SPECIFIC VALUES for the env variables in `env.example` and then:
+mv env.example .env
+
+#######################################################################
+# TODO The steps below are for reference and will evolve
+############################ Grap Creation ############################
+# Step 1: Run agent for document structure creation
+#######################################################################
 pixi run python src/hackathon/graph_creation_crewai.py
-# The stuff below is just for reference
-pixi run python src/hackathon/basic_oai_swarm.py
-pixi run python src/hackathon/graph_creation_oai_swarm.py
+#######################################################################
+# Step 2: Run agent for triple creation
+#######################################################################
+pixi run python src/hackathon/grap_creation_step_2_triples.py
+#######################################################################
+# Step 2: Run agent for final graph creation
+#######################################################################
+pixi run python src/hackathon/grap_creation_step_3.py
 ```
 
 ### Development
@@ -50,4 +63,13 @@ pixi install
 git add .
 git commit -m "xxxx < Intentional >
 git push origin main
+```
+
+## Extra Reference
+
+The stuff below is just for reference on how to use other frameworks.
+
+```sh
+pixi run python src/hackathon/basic_oai_swarm.py
+pixi run python src/hackathon/graph_creation_oai_swarm.py
 ```
