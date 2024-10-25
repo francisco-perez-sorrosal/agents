@@ -7,6 +7,8 @@
 Neo4j: GraphDB / Vector DB (Aura cloud)
 OpenAI: GPT-4o for (LLM) and text-embedding-small
 
+### Install
+
 1. Install [pixi](https://pixi.sh/latest/)
 
 2. Run project:
@@ -15,13 +17,15 @@ OpenAI: GPT-4o for (LLM) and text-embedding-small
 cd berkeley-course-2024/hackathon
 pixi install
 # Run agent
+pixi run python src/hackathon/graph_creation_crewai.py
+# The stuff below is just for reference
 pixi run python src/hackathon/basic_oai_swarm.py
 pixi run python src/hackathon/graph_creation_oai_swarm.py
 ```
 
 ### Development
 
-#### Test
+#### Test (Not implemented yet)
 
 Create pytest pixi env:
 
@@ -37,7 +41,7 @@ Once created, execute test with:
 pixi r pytest
 ```
 
-#### Versioning
+#### Versioning (Not implemented yet)
 
 ```sh
 # Increment version
