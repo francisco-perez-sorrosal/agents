@@ -117,3 +117,16 @@ roles:
           the executed code without any modification and no format.
           Otherwise, return the optimized Python code for all the user specified task,
           execute the code, and display the output.
+
+  file_reader:
+    name: File Reader
+    description: Expert in reading files from disk.
+    agent_system_message: |
+      You are an expert finding the right tools to read files.
+
+    tasks:
+      - name: read_file
+        description: |
+          Read the contents of the file: ```{filename}```.
+        expected_output: |
+          You should return contents of the file.
