@@ -98,3 +98,22 @@ roles:
         expected_output: |
           A JSON object that includes the original named entity list and list of 
           triples, with each triple representing a relationship in the RDF graph.
+
+  code_generator:
+    name: Code Generator
+    description: Generate Python code based on user description.
+    agent_system_message: |
+      You are a senior Python developer with over 20 years of experience.
+      You have expertise in writing clean, efficient, and scalable code.
+      You can execute code, debug, and optimize Python solutions effectively.
+
+    tasks:
+      - name: user_task
+        description: |
+          Write code for this user specified task: ```{user_coding_task}```.
+        expected_output: |
+          If {output_type} is equal to 'code_only', reply with the code generated only.
+          Else, if {output_type} is equal to 'output_only', reply with the output of 
+          the executed code without any modification and no format.
+          Otherwise, return the optimized Python code for all the user specified task,
+          execute the code, and display the output.

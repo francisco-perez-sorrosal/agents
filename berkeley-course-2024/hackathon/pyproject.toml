@@ -4,7 +4,7 @@ description = "Add a short description here"
 name = "hackathon"
 requires-python = ">= 3.11,<3.13"
 version = "0.1.0"
-dependencies = ["swarm @ git+ssh://git@github.com/openai/swarm.git", "langchain>=0.2.16,<0.4", "rich>=13.9.3,<14", "llm-foundation>=0.0.21,<0.0.22", "langchain-community>=0.3.3,<0.4", "neo4j>=5.25.0,<6"]
+dependencies = ["swarm @ git+ssh://git@github.com/openai/swarm.git", "langchain>=0.2.16,<0.4", "rich>=13.9.3,<14", "llm-foundation>=0.0.22,<0.0.23", "langchain-community>=0.3.3,<0.4", "neo4j>=5.25.0,<6", "docker>=7.1.0,<8"]
 
 [build-system]
 build-backend = "hatchling.build"
