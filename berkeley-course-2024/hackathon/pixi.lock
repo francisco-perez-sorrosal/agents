@@ -146,7 +146,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/c2/06/159d619a92019e6c3323526b9ab1776e451dd0a97bc0e21d3da9016cc2dd/langgraph_sdk-0.1.33-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/71/fd/7713b0e737f4e171112e44134790823ccec4aabe31f07d6e836fcbeb3b8a/langsmith-0.1.137-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/24/bf/d339f95fbac084ba676582e4a9d3d7c4aef09def8f10ce63cc76db279ee6/litellm-1.50.4-py3-none-any.whl
-      - pypi: https://files.pythonhosted.org/packages/7b/38/f617ebb6ed382093a139f671a644ce0243dd67235206ca8f713f696c4c8e/llm_foundation-0.0.22-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/33/86/518ebd2d54ec8afb8b738ac3209946dfb3cad1892200f7016e0fdbe9ec75/llm_foundation-0.0.23-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/d0/ba/e29b2a5d12d5fad9c037ad7d5c3dffb22864d6511310bffa414c56408995/loadenv-0.1.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/48/22/bc14c6f02e6dccaafb3eba95764c8f096714260c2aa5f76f654fd16a23dd/Mako-1.3.6-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/42/d7/1ec15b46af6af88f19b8e5ffea08fa375d433c998b8a7639e76935c14f1f/markdown_it_py-3.0.0-py3-none-any.whl
@@ -1735,12 +1735,12 @@ packages:
   name: hackathon
   version: 0.1.0
   path: .
-  sha256: ec88770fc7dec6570010c7fdad32f42addf5c4a6a349d5f5bdd66ff53e2cde97
+  sha256: 85fa640172e77c4e811b0a51ec3432d68e21c7ec2d97e2443a36941a5f9855d4
   requires_dist:
   - swarm @ git+ssh://git@github.com/openai/swarm.git
   - langchain>=0.2.16,<0.4
   - rich>=13.9.3,<14
-  - llm-foundation>=0.0.22,<0.0.23
+  - llm-foundation>=0.0.23,<0.1.0
   - langchain-community>=0.3.3,<0.4
   - neo4j>=5.25.0,<6
   - docker>=7.1.0,<8
@@ -2791,9 +2791,9 @@ packages:
   requires_python: '>=3.8,!=2.7.*,!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,!=3.5.*,!=3.6.*,!=3.7.*'
 - kind: pypi
   name: llm-foundation
-  version: 0.0.22
-  url: https://files.pythonhosted.org/packages/7b/38/f617ebb6ed382093a139f671a644ce0243dd67235206ca8f713f696c4c8e/llm_foundation-0.0.22-py3-none-any.whl
-  sha256: 8854dc6a9143deb13ec31778bbdc4a8339f56f489f9ae83ebec4605b6ba1296b
+  version: 0.0.23
+  url: https://files.pythonhosted.org/packages/33/86/518ebd2d54ec8afb8b738ac3209946dfb3cad1892200f7016e0fdbe9ec75/llm_foundation-0.0.23-py3-none-any.whl
+  sha256: 9c2b04205717411562198822a9006da7b7cdc5c12d694d2c03ad9deb32ac1c8a
   requires_dist:
   - autogen<0.4,>=0.3.1
   - beautifulsoup4<5,>=4.12.3

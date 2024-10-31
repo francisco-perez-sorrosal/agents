@@ -122,11 +122,25 @@ roles:
     name: File Reader
     description: Expert in reading files from disk.
     agent_system_message: |
-      You are an expert finding the right tools to read files.
+      You are an expert reading files from disk.
 
     tasks:
       - name: read_file
         description: |
           Read the contents of the file: ```{filename}```.
         expected_output: |
-          You should return contents of the file.
+          You should return contents of the file. Be sure that you return the whole content.
+
+  entity_filter:
+    name: Entity Filter
+    description: Expert in extracting the named entities from a list of document structures.
+    agent_system_message: |
+      You are an expert extracting the entities from document structures.
+
+    tasks:
+      - name: filter_entities
+        description: |
+          Examine the list of document structures and for each of them filter the named entities.
+          Return again the list of document structures with the filtered entities.
+        expected_output: |
+          You should return the list of document structures with the filtered entities.
