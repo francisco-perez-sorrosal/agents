@@ -9,57 +9,16 @@ import numpy as np
 
 from crewai import Agent, Task, Crew, Process
 from crewai.crews import CrewOutput
-from crewai_tools import tool
 from llm_foundation.agent_types import Persona, Role, CrewAITask
 from pydantic import BaseModel
 
-from hackathon.tools import load_pdf, split_text
+from hackathon.tools import read_file, filter_named_entities
 
 from llm_foundation import logger
 
 
 document_name: str = "2405.14831v1.pdf"
 document_structure_file = f"{document_name.rsplit(".", 1)[0]}_document_structure.pkl"
-
-
-@tool
-def read_file(filename:str = "2405.14831v1.pdf"):
-    """Reads a file from disk.
-    It returns the content of the file.
-    """
-    logger.info(f"Loading document structure from {filename}")
-    return pickle.load(open(filename, "rb"))
-
-
-@tool
-def filter_named_entities(document_structure_with_entities_and_triples: List[dict]) -> List[dict]:
-    """Your function description here.
-
-    Args:
-        document_structure_with_entities_and_triples (List[dict]): A list of dictionaries containing 
-        the document structure with entities and triples.
-
-    Returns:
-        List[dict]: A list of the named entities mentioned in the document.
-    """
-    for chunk_info in document_structure_with_entities_and_triples:
-        named_entities = chunk_info["named_entities"]
-        logger.info(named_entities)
-        named_entities = [entity.lower() for entity in named_entities]
-        triples = chunk_info["triples"]
-        logger.info(f"Initial Named Entities ({len(named_entities)}): {named_entities}")
-        named_entities: set = set(named_entities)
-        logger.info(f"Initial Named Entities after dedup ({len(named_entities)}): {named_entities}")
-        wrong_triples = 0
-        for triple in triples:
-            if len(triple) != 3:
-                wrong_triples += 1
-                continue
-            named_entities.add(triple[0].lower())
-            named_entities.add(triple[2].lower())
-        logger.info(f"Final Named Entities ({len(named_entities)}): {named_entities}")
-        chunk_info["named_entities"] = list(named_entities)
-    return document_structure_with_entities_and_triples[:1] # TODO Remove this filter!!!! Just for testing
 
 
 entity_master = Persona.from_yaml_file("Personas/EntityMasterCrewAI.yaml")

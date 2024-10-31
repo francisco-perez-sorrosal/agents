@@ -6,6 +6,10 @@ from langchain_core.documents import BaseDocumentTransformer, Document
 import uuid
 import pickle
 
+from crewai_tools import tool
+from llm_foundation import logger
+
+
 def load_pdf(file_path:str = "2405.14831v1.pdf"): 
 
     doc_loader = PyPDFLoader(file_path)
@@ -58,3 +62,46 @@ def save_doc(doc_name: str, chunks: List[Document], with_uuid_name: bool = True)
     pickle.dump(chunks_arr, open(doc_name, "wb"))
     print(f"{doc_name} saved!")
     
+
+###################################################################################################
+# Crew AI tools
+###################################################################################################
+
+
+@tool
+def read_file(filename:str):
+    """Reads a file from disk.
+    It returns the content of the file.
+    """
+    logger.info(f"Loading document structure from {filename}")
+    return pickle.load(open(filename, "rb"))
+
+
+@tool
+def filter_named_entities(document_structure_with_entities_and_triples: List[dict]) -> List[dict]:
+    """Filters named entities from a list of document chunks.
+
+    Args:
+        document_structure_with_entities_and_triples (List[dict]): A list of dictionaries containing 
+        the document structure with entities and triples.
+
+    Returns:
+        List[dict]: A list of the document chunks with the extracted named entities mentioned in the document.
+    """
+    for chunk_info in document_structure_with_entities_and_triples:        
+        named_entities = [entity.lower() for entity in chunk_info["named_entities"]]
+        logger.debug(named_entities)
+        triples = chunk_info["triples"]
+        logger.info(f"Initial Named Entities ({len(named_entities)}): {named_entities}")
+        named_entities: set = set(named_entities)
+        logger.info(f"Initial Named Entities after dedup ({len(named_entities)}): {named_entities}")
+        wrong_triples = 0
+        for triple in triples:
+            if len(triple) != 3:
+                wrong_triples += 1
+                continue
+            named_entities.add(triple[0].lower())
+            named_entities.add(triple[2].lower())
+        logger.info(f"Final Named Entities ({len(named_entities)}): {named_entities}")
+        chunk_info["named_entities"] = list(named_entities)
+    return document_structure_with_entities_and_triples[:1] # TODO Remove this filter!!!! Just for testing
