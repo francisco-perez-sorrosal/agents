@@ -1,5 +1,5 @@
 import os
-from typing import List, Optional
+from typing import Dict, List, Optional
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_core.documents import BaseDocumentTransformer, Document
@@ -105,3 +105,29 @@ def filter_named_entities(document_structure_with_entities_and_triples: List[dic
         logger.info(f"Final Named Entities ({len(named_entities)}): {named_entities}")
         chunk_info["named_entities"] = list(named_entities)
     return document_structure_with_entities_and_triples[:1] # TODO Remove this filter!!!! Just for testing
+
+
+@tool
+def create_document_deduped_entities_dict(document_structure_with_entities_and_triples: List[dict]) -> Dict[str, str]:
+    """Extract a map of entity to entity unique id (uid) from a document structure.
+
+    Args:
+        document_structure_with_entities_and_triples (List[dict]): A list of dictionaries containing 
+        the document structure with entities and triples.
+        
+    Returns:
+        Dict[str, ing]: the deduped entity to uid map
+    """
+    
+    named_entities_dict = {}
+    next_idx_for_named_entity = 0
+    
+    for chunk_info in document_structure_with_entities_and_triples:
+        assert chunk_info.get("named_entities", None) is not None, "Document chunk should contain named_entities!"
+        named_entities = chunk_info["named_entities"]
+        for named_entity in named_entities:
+            if named_entity not in named_entities_dict:
+                named_entities_dict[named_entity] = next_idx_for_named_entity
+                next_idx_for_named_entity += 1
+
+    return named_entities_dict

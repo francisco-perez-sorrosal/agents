@@ -144,3 +144,22 @@ roles:
           Return again the list of document structures with the filtered entities.
         expected_output: |
           You should return the list of document structures with the filtered entities.
+
+
+  entity_deduper:
+    name: Entity Deduper
+    description: |
+      Expert in dedup the named entities from a list of document structures 
+      and create unique ids for them.
+    agent_system_message: |
+      You are an expert deduping the entities from document structures and creating unique entity ids.
+
+    tasks:
+      - name: dedup_entities
+        description: |
+          Examine the list of document structures and create a dictionary extracting from
+          each document structure the unique named entities and create a unique id for each
+          one of them.
+          Return the dictionary with the deduped entities mapped to their unique ids.
+        expected_output: |
+          You should return the dictionary of deduped entities mapped to their unique ids.

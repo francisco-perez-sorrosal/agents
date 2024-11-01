@@ -12,7 +12,7 @@ from crewai.crews import CrewOutput
 from llm_foundation.agent_types import Persona, Role, CrewAITask
 from pydantic import BaseModel
 
-from hackathon.tools import read_file, filter_named_entities
+from hackathon.tools import read_file, filter_named_entities, create_document_deduped_entities_dict
 
 from llm_foundation import logger
 
@@ -24,11 +24,16 @@ document_structure_file = f"{document_name.rsplit(".", 1)[0]}_document_structure
 entity_master = Persona.from_yaml_file("Personas/EntityMasterCrewAI.yaml")
 file_reader_role: Role = entity_master.get_role("file_reader")
 entity_filter_role: Role = entity_master.get_role("entity_filter")
+entity_deduper_role: Role = entity_master.get_role("entity_deduper")
+
+
+class NamedEntities(BaseModel):
+    named_entities: List[str]
 
 class DocumentStructure(BaseModel):
     id: int
     text: str
-    named_entities: List[str]
+    named_entities: NamedEntities
     triples: List[List[str]]
     
 class DocumentStructures(BaseModel):    
@@ -52,9 +57,20 @@ filter_entities_task = entity_filter_role.get_crew_ai_task("filter_entities",
                                                          tools=[filter_named_entities], #)
                                                          output_json=DocumentStructures,)
 
+entity_deduper_agent: Agent = entity_deduper_role.to_crewai_agent(verbose=True,
+                                                              allow_delegation=False,
+                                                              allow_code_execution=False,
+                                                              tools=[create_document_deduped_entities_dict])
+
+dedup_entities_task = entity_deduper_role.get_crew_ai_task("dedup_entities", 
+                                                         entity_filter_agent, 
+                                                         tools=[create_document_deduped_entities_dict], #)
+                                                         output_json=NamedEntities,)
+
+
 crew = Crew(
-    agents=[file_reader_agent, entity_filter_agent], 
-    tasks=[file_reader_task, filter_entities_task],
+    agents=[file_reader_agent, entity_filter_agent, entity_deduper_agent], 
+    tasks=[file_reader_task, filter_entities_task, dedup_entities_task],
     process=Process.sequential,  # Sequential task execution
 )
 
