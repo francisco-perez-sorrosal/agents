@@ -1,32 +1,13 @@
 import os
 from typing import Dict, List, Optional
-from langchain_community.document_loaders import PyPDFLoader
-from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain_core.documents import BaseDocumentTransformer, Document
+
+import numpy as np
 import uuid
 import pickle
 
 from crewai_tools import tool
+from langchain_core.documents import BaseDocumentTransformer, Document
 from llm_foundation import logger
-
-
-def load_pdf(file_path:str = "2405.14831v1.pdf"): 
-
-    doc_loader = PyPDFLoader(file_path)
-    pages = doc_loader.load_and_split()
-    return "\n".join([p.page_content for p in pages])
-
-
-def split_text(text: str, chunk_size: int=1000, char_overlap: int=0) -> List[Document]:
-
-    text_splitter = RecursiveCharacterTextSplitter(
-        chunk_size=chunk_size,
-        chunk_overlap=char_overlap,
-        length_function=len,
-        is_separator_regex=False,
-    )
-
-    return text_splitter.create_documents([text])
 
 
 def get_uuid(string: str):
@@ -131,3 +112,22 @@ def create_document_deduped_entities_dict(document_structure_with_entities_and_t
                 next_idx_for_named_entity += 1
 
     return named_entities_dict
+
+@tool
+def create_matrix_entity_ref_count(document_structure_with_entities_and_triples: List[dict], named_entities_dict: dict) -> np.ndarray:
+    """Create a matrix of entity reference count per document chunk.
+    
+    """
+    
+    n_of_entities = len(named_entities_dict)
+    n_of_chunks = len(document_structure_with_entities_and_triples)
+    
+    document_chunks = document_structure_with_entities_and_triples
+    entity_per_chunk_count_matrix = np.zeros((n_of_entities, n_of_chunks))
+    for chunk_idx, chunk_info in enumerate(document_chunks):
+        named_entities = chunk_info["named_entities"]
+        for named_entity in named_entities:
+            named_entity_hash = named_entities_dict[named_entity.lower()]
+            # Count of named_entity appearing in the document chunk
+            entity_per_chunk_count_matrix[named_entity_hash][chunk_idx] = chunk_info["text"].lower().count(named_entity.lower())
+    return entity_per_chunk_count_matrix

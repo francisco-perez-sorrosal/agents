@@ -1,6 +1,5 @@
 import json
 import pprint
-import pickle
 
 from typing import Dict, List, Literal
 
@@ -12,33 +11,10 @@ from pydantic import BaseModel
 from rich import print
 from rich.pretty import pprint
 
-from hackathon.tools import load_pdf, split_text
+from hackathon.utils import build_document_structure, save_document_structure
 
 CHUNK_SIZE = 5000
 document_name = "2405.14831v1.pdf"
-
-def save_document_structure(document_chunks: List[dict], output_file: str, format: Literal["pickle", "json"] = "pickle"):
-        logger.info(f"Saving document structure to {output_file}")
-        match format:
-            case "pickle":
-                with open(output_file, "wb") as f:
-                    pickle.dump(document_chunks, f)
-            case "json":
-                with open(output_file, "w") as f:
-                    json.dump(document_chunks, f, indent=4)
-            case _:
-                raise ValueError(f"Invalid format: {format}")
-
-
-def build_document_structure(document_path: str, chunk_size=1000) -> List[Dict]:
-    text = load_pdf(document_path)
-    chunks = split_text(text, chunk_size=chunk_size, char_overlap=0)
-    document_chunks: List[Dict] = [ { "id":idx, "text":chunk.page_content } for idx, chunk in enumerate(chunks[0:1])]  # TODO Remove this [0:1] filter!!!! Just for testing
-    assert len(document_chunks) == 1, f"Number of chunks mismatch: {len(document_chunks)} is not 1"  # TODO Remove this assert!!!! Just for testing
-    logger.info("--------------------------------------------------------------------------------")
-    logger.info(f"Number of chunks: {len(chunks)}")
-    logger.info("--------------------------------------------------------------------------------")
-    return document_chunks
 
 
 ########################################################################################

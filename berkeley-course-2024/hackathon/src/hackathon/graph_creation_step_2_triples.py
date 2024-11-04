@@ -14,7 +14,7 @@ from pydantic import BaseModel
 from rich import print
 from rich.pretty import pprint
 
-from hackathon.tools import load_pdf, split_text
+from hackathon.utils import save_document_structure
 
 document_name: str = "2405.14831v1.pdf"
 document_structure_file = f"{document_name.rsplit(".", 1)[0]}_document_structure.pkl"
@@ -49,6 +49,9 @@ def filter_named_entities(document_structure_with_entities_and_triples: List[dic
 
 
 document_structure_with_entities_and_triples = filter_named_entities(document_structure_with_entities_and_triples)
+document_structure_file_with_ne = f"{document_name.rsplit(".", 1)[0]}_document_structure_with_ne.pkl"
+save_document_structure(document_structure_with_entities_and_triples, document_structure_file_with_ne)
+
 
 def create_document_deduped_entities_dict(document_structure_with_entities_and_triples: List[dict]) -> Dict[str, str]:
     
@@ -94,6 +97,10 @@ def create_matrix_entity_ref_count(document_structure_with_entities_and_triples:
 
 
 matrix = create_matrix_entity_ref_count(document_structure_with_entities_and_triples, entity2uid_dict)
+
+print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+print(matrix)
+print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
 
 example_chunk = document_structure_with_entities_and_triples[0]
 

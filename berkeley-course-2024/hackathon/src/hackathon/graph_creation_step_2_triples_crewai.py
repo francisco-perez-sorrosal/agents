@@ -13,6 +13,7 @@ from llm_foundation.agent_types import Persona, Role, CrewAITask
 from pydantic import BaseModel
 
 from hackathon.tools import read_file, filter_named_entities, create_document_deduped_entities_dict
+from hackathon.input_output_types import DocumentStructures, DocumentStructure, NamedEntities
 
 from llm_foundation import logger
 
@@ -26,18 +27,6 @@ file_reader_role: Role = entity_master.get_role("file_reader")
 entity_filter_role: Role = entity_master.get_role("entity_filter")
 entity_deduper_role: Role = entity_master.get_role("entity_deduper")
 
-
-class NamedEntities(BaseModel):
-    named_entities: List[str]
-
-class DocumentStructure(BaseModel):
-    id: int
-    text: str
-    named_entities: NamedEntities
-    triples: List[List[str]]
-    
-class DocumentStructures(BaseModel):    
-    document_structures: List[DocumentStructure]
 
 file_reader_agent: Agent = file_reader_role.to_crewai_agent(verbose=True,
                                                                allow_delegation=False,
@@ -78,8 +67,8 @@ crew = Crew(
 crew_inputs = {'filename': document_structure_file,}
 result: CrewOutput = crew.kickoff(inputs=crew_inputs,)
 
-logger.info("---------")
-
+logger.info("---------------------------------------------------------------------------------")
 file_content = json.loads(json.dumps(result.json))
+logger.info(f"Output type: {type(file_content)}")
 logger.info(file_content)
-logger.info(type(file_content))
+logger.info("---------------------------------------------------------------------------------")

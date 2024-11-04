@@ -122,7 +122,8 @@ roles:
     name: File Reader
     description: Expert in reading files from disk.
     agent_system_message: |
-      You are an expert reading files from disk.
+      You are an expert reading files from disk. If you receive a list of filenames, you should
+      read the contents of each file in the list and return them.
 
     tasks:
       - name: read_file
@@ -163,3 +164,19 @@ roles:
           Return the dictionary with the deduped entities mapped to their unique ids.
         expected_output: |
           You should return the dictionary of deduped entities mapped to their unique ids.
+
+  matrix_creator:
+    name: Matrix Creator
+    description: |  # This is a goal in crew AI
+      You are expert in creating a named_entity count per document chunk matrix.
+    agent_system_message: |
+      You are expert in creating a named_entity count per document chunk matrix.
+
+    tasks:
+      - name: create_matrix
+        description: |
+          From the list of document chunks and create a 2x2 matrix that, for each entity unique id
+          (row), contains the number of references of each entity in each ducument chunk (column).
+          Return the matrix as returned by the tool.
+        expected_output: |
+          You should return the matrix as it is.
