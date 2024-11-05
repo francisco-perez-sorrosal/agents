@@ -58,17 +58,7 @@ def read_file(filename:str):
     return pickle.load(open(filename, "rb"))
 
 
-@tool
 def filter_named_entities(document_structure_with_entities_and_triples: List[dict]) -> List[dict]:
-    """Filters named entities from a list of document chunks.
-
-    Args:
-        document_structure_with_entities_and_triples (List[dict]): A list of dictionaries containing 
-        the document structure with entities and triples.
-
-    Returns:
-        List[dict]: A list of the document chunks with the extracted named entities mentioned in the document.
-    """
     for chunk_info in document_structure_with_entities_and_triples:        
         named_entities = [entity.lower() for entity in chunk_info["named_entities"]]
         logger.debug(named_entities)
@@ -89,17 +79,20 @@ def filter_named_entities(document_structure_with_entities_and_triples: List[dic
 
 
 @tool
-def create_document_deduped_entities_dict(document_structure_with_entities_and_triples: List[dict]) -> Dict[str, str]:
-    """Extract a map of entity to entity unique id (uid) from a document structure.
+def filter_named_entities_tool(document_structure_with_entities_and_triples: List[dict]) -> List[dict]:
+    """Filters named entities from a list of document chunks.
 
     Args:
         document_structure_with_entities_and_triples (List[dict]): A list of dictionaries containing 
         the document structure with entities and triples.
-        
+
     Returns:
-        Dict[str, ing]: the deduped entity to uid map
+        List[dict]: A list of the document chunks with the extracted named entities mentioned in the document.
     """
-    
+    return filter_named_entities(document_structure_with_entities_and_triples)
+
+
+def create_document_deduped_entities_dict(document_structure_with_entities_and_triples: List[dict]) -> Dict[str, str]:
     named_entities_dict = {}
     next_idx_for_named_entity = 0
     
@@ -113,12 +106,22 @@ def create_document_deduped_entities_dict(document_structure_with_entities_and_t
 
     return named_entities_dict
 
+
 @tool
-def create_matrix_entity_ref_count(document_structure_with_entities_and_triples: List[dict], named_entities_dict: dict) -> np.ndarray:
-    """Create a matrix of entity reference count per document chunk.
-    
+def create_document_deduped_entities_dict_tool(document_structure_with_entities_and_triples: List[dict]) -> Dict[str, str]:
+    """Extract a map of entity to entity unique id (uid) from a document structure.
+
+    Args:
+        document_structure_with_entities_and_triples (List[dict]): A list of dictionaries containing 
+        the document structure with entities and triples.
+        
+    Returns:
+        Dict[str, ing]: the deduped entity to uid map
     """
-    
+    return create_document_deduped_entities_dict(document_structure_with_entities_and_triples)
+
+
+def create_matrix_entity_ref_count(document_structure_with_entities_and_triples: List[dict], named_entities_dict: dict) -> np.ndarray:    
     n_of_entities = len(named_entities_dict)
     n_of_chunks = len(document_structure_with_entities_and_triples)
     
@@ -131,3 +134,11 @@ def create_matrix_entity_ref_count(document_structure_with_entities_and_triples:
             # Count of named_entity appearing in the document chunk
             entity_per_chunk_count_matrix[named_entity_hash][chunk_idx] = chunk_info["text"].lower().count(named_entity.lower())
     return entity_per_chunk_count_matrix
+
+
+@tool
+def create_matrix_entity_ref_count_tool(document_structure_with_entities_and_triples: List[dict], named_entities_dict: dict) -> np.ndarray:
+    """Create a matrix of entity reference count per document chunk.
+    
+    """
+    return create_matrix_entity_ref_count(document_structure_with_entities_and_triples, named_entities_dict)
