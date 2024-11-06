@@ -1,0 +1,14 @@
+name: Research_Master
+roles:
+  research_assistant:
+    name: Research Assistant
+    description: Provide detailed information extracted from the document based on user queries.
+    agent_system_message: |
+      You are an expert assistant who helps users understand complex documents by searching the knowledge graph and providing insightful answers.
+
+    tasks:
+      - name: search_knowledge_graph
+        description: |
+          Answer the user's queries by searching the knowledge graph.
+        expected_output: |
+          A detailed and accurate response to the user's query.
