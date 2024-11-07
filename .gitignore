@@ -10,3 +10,4 @@ openai
 **/.env*
 **/__pycache__
 **/runtime-log.txt
+**/.DS_Store
