@@ -7,6 +7,15 @@ from llm_foundation import logger
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_core.documents import Document
 from langchain_text_splitters import RecursiveCharacterTextSplitter
+from pydantic import BaseModel
+
+class NEO4JIdentity(BaseModel):
+    uri: str
+    username: str
+    password: str
+    
+    def auth_creds(self):
+        return (self.username, self.password)
 
 
 def load_pdf(file_path:str = "2405.14831v1.pdf"): 
@@ -28,14 +37,17 @@ def split_text(text: str, chunk_size: int=1000, char_overlap: int=0) -> List[Doc
     return text_splitter.create_documents([text])
 
 
-def build_document_structure(document_path: str, chunk_size=1000) -> List[Dict]:
+def build_document_structure(document_path: str, chunk_size=1000, char_overlap=0, chunk_limit: int = -1) -> List[Dict]:
     text = load_pdf(document_path)
     chunks = split_text(text, chunk_size=chunk_size, char_overlap=0)
-    document_chunks: List[Dict] = [ { "id":idx, "text":chunk.page_content } for idx, chunk in enumerate(chunks[0:1])]  # TODO Remove this [0:1] filter!!!! Just for testing
-    assert len(document_chunks) == 1, f"Number of chunks mismatch: {len(document_chunks)} is not 1"  # TODO Remove this assert!!!! Just for testing
+    document_chunks: List[Dict] = [ { "id":idx, "text":chunk.page_content } for idx, chunk in enumerate(chunks)]
+    # assert len(document_chunks) == 1, f"Number of chunks mismatch: {len(document_chunks)} is not 1"  # TODO Remove this assert!!!! Just for testing
     logger.info("--------------------------------------------------------------------------------")
     logger.info(f"Number of chunks: {len(chunks)}")
     logger.info("--------------------------------------------------------------------------------")
+    if chunk_limit > 0:  # Limit the number of chunks!!!!
+        logger.warning(f"Capping the Document to only {chunk_limit} chunks!!!")
+        return document_chunks[:chunk_limit]
     return document_chunks
 
 

@@ -2,8 +2,12 @@
 # Neo4J graph functions
 ###################################################################################################
 
+import numpy as np
+import igraph as ig
+
 from typing import Dict, List
 from langchain_community.graphs import Neo4jGraph
+from neo4j import GraphDatabase
 
 from llm_foundation import logger
 
@@ -83,3 +87,51 @@ def add_similar_entities(kg: Neo4jGraph, similar_entities: List):
     MERGE (a)-[:SIMILAR_TO]->(b)
     """
     kg.query(query, {"similar_entities": similar_entities})
+
+
+def pagerank(uri: str, auth: str, nodes, entities_ref_count_matrix):
+    
+    # remove duplicated nodes
+    unique_data = {}
+    for item in nodes:
+        unique_data[item['id']] = item
+
+    unique_nodes = list(unique_data.values())
+
+    with GraphDatabase.driver(uri, auth=auth) as driver:
+        with driver.session() as session:
+            
+            # Get entities and relations and create the graph
+            entities = session.execute_read(lambda tx: tx.run("MATCH (n:Entity) RETURN n.node_id AS node_id").data())
+            relations = session.execute_read(lambda tx: tx.run("MATCH (a)-[r:RELATES_TO]->(b) RETURN a.node_id AS source, b.node_id AS target").data())
+
+            # Create an igraph graph
+            g = ig.Graph(directed=True) 
+            
+            # Build graph
+            for gnode in entities:    
+                g.add_vertex(name=str(gnode["node_id"]), labels=str(gnode["node_id"]))
+
+            # add edges
+            g.add_edges([(str(rel["source"]), str(rel["target"])) for rel in relations])
+
+            # Personalized PageRank
+            personalization = [0] * len(g.vs)
+            # Set personalization vector 
+            personalization_value  = 1.0 / len(nodes)
+            for node in unique_nodes:
+                idx = g.vs.find(name=str(node["id"])).index
+                personalization[idx] += personalization_value 
+
+                # calculate node specificity len(node_passages) ** -1
+                node_sum = np.sum(entities_ref_count_matrix[node["id"]])
+                if node_sum == 0:
+                    logger.warning(f"Node sum for node {node['id']} is zero", node)
+                else:
+                    personalization[idx] *= node_sum ** -1
+                    logger.info(f"Node sum{node['id']}: {node_sum} personalization: {personalization[idx]}")
+
+            #https://igraph.org/python/api/0.9.11/igraph._igraph.GraphBase.html#personalized_pagerank
+            pagerank_scores = g.personalized_pagerank(damping=0.85, reset=personalization)
+
+    return pagerank_scores

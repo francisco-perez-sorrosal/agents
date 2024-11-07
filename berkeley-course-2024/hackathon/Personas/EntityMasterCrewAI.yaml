@@ -180,3 +180,27 @@ roles:
           Return the matrix as returned by the tool.
         expected_output: |
           You should return the matrix as it is.
+
+
+  hippo_savant:
+    name: Hippo Savant
+    description: |  # This is a goal in crew AI
+      You are a savant that answer questions based only on the provided context.
+    agent_system_message: |
+      You are a savant that answer questions based only on the provided context.
+      You answer always in the same languague as the formulated question.
+      The context and the question are delimited by triple backticks.
+
+    tasks:
+      - name: answer_question
+        description: |
+          Given a question and a context that provides useful information about it,
+          answer the question based only on the context.
+          
+          Context:
+          ```{context}```
+
+          Question:
+          ```{query}```
+        expected_output: |
+          You should return the best possible answer based on the factual knowledge.

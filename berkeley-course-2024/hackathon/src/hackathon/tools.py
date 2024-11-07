@@ -2,11 +2,15 @@ import os
 from typing import Dict, List, Optional
 
 import numpy as np
-import uuid
 import pickle
+import re
+import uuid
 
 from crewai_tools import tool
-from langchain_core.documents import BaseDocumentTransformer, Document
+from langchain_core.documents import Document
+from langchain_core.prompts import ChatPromptTemplate
+from langchain.output_parsers.json import SimpleJsonOutputParser
+
 from llm_foundation import logger
 
 
@@ -75,7 +79,7 @@ def filter_named_entities(document_structure_with_entities_and_triples: List[dic
             named_entities.add(triple[2].lower())
         logger.info(f"Final Named Entities ({len(named_entities)}): {named_entities}")
         chunk_info["named_entities"] = list(named_entities)
-    return document_structure_with_entities_and_triples[:1] # TODO Remove this filter!!!! Just for testing
+    return document_structure_with_entities_and_triples
 
 
 @tool
@@ -130,9 +134,12 @@ def create_matrix_entity_ref_count(document_structure_with_entities_and_triples:
     for chunk_idx, chunk_info in enumerate(document_chunks):
         named_entities = chunk_info["named_entities"]
         for named_entity in named_entities:
+            # Remove multiple spaces and new lines
+            text = re.sub(' +', ' ', chunk_info["text"].lower())
+            text = re.sub('\n+', ' ', text)
             named_entity_hash = named_entities_dict[named_entity.lower()]
             # Count of named_entity appearing in the document chunk
-            entity_per_chunk_count_matrix[named_entity_hash][chunk_idx] = chunk_info["text"].lower().count(named_entity.lower())
+            entity_per_chunk_count_matrix[named_entity_hash][chunk_idx] = text.count(named_entity.lower())
     return entity_per_chunk_count_matrix
 
 
@@ -142,3 +149,25 @@ def create_matrix_entity_ref_count_tool(document_structure_with_entities_and_tri
     
     """
     return create_matrix_entity_ref_count(document_structure_with_entities_and_triples, named_entities_dict)
+
+
+def extract_entities_from_query(llm_model, user_query):
+    # This prompt is a simpler version o the original, it works better for small paragraphs and less entities and
+    # in other languages like portuguese
+    extract_entities_custom_prompt = ChatPromptTemplate.from_messages(
+        [
+            ("system", """Your task is to extract all entities from the given paragraph, in the same language as the paragraph.
+    Respond with a JSON list of entities like {{"entities":["entity1", "entity2", ...]}}"""),
+            ("human", """Paragraph:```
+    {passage_text}
+    ```"""),
+        ]
+    )
+
+    json_output_parser = SimpleJsonOutputParser()
+    chain_query_entities = extract_entities_custom_prompt | ChatOpenAI(model=llm_model, temperature=0.0) | json_output_parser
+    #chain_query_entities = extract_entities_prompt | ChatOpenAI(model=llm_model, temperature=0.0) | json_output_parser
+    query_entities = chain_query_entities.invoke({"passage_text": user_query})
+    query_entities["named_entities"] = query_entities["entities"] # change the name to named_entities
+
+    return query_entities

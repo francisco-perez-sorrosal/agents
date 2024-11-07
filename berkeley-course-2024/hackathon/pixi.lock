@@ -114,6 +114,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/d7/de/85a784bcc4a3779d1753a7ec2dee5de90e18c7bcf402e71b51fcf150b129/hyperframe-6.0.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/7d/0c/4ef72754c050979fdcc06c744715ae70ea37e734816bb6514f79df77a42f/identify-2.6.1-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/76/c6/c88e154df9c4e1a2a66ccf0005a88dfb2650c1dffb6f5ce603dfbd452ce3/idna-3.10-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/dd/7e/8ee4e8f03b03feca33bb9dcc730724353ac36cbe7da7b38397f8ae5cd58b/igraph-0.11.8-cp39-abi3-macosx_11_0_arm64.whl
       - pypi: https://files.pythonhosted.org/packages/c0/14/362d31bf1076b21e1bcdcb0dc61944822ff263937b804a79231df2774d28/importlib_metadata-8.4.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/e1/6a/4604f9ae2fa62ef47b9de2fa5ad599589d28c9fd1d335f32759813dfa91e/importlib_resources-6.4.5-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/ef/a6/62565a6e1cf69e10f5727360368e451d4b7f58beeac6173dc9db836a5b46/iniconfig-2.0.0-py3-none-any.whl
@@ -253,6 +254,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/40/44/4a5f08c96eb108af5cb50b41f76142f0afa346dfa99d5296fe7202a11854/tabulate-0.9.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/b6/cb/b86984bed139586d01532a587464b5805f12e397594f19f931c4c2fbfa61/tenacity-9.0.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/7f/be/df630c387a0a054815d60be6a97eb4e8f17385d5d6fe660e1c02750062b4/termcolor-2.5.0-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/24/99/4772b8e00a136f3e01236de33b0efda31ee7077203ba5967fcc76da94d65/texttable-1.7.0-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/b6/30/09ced367d280072d7a3e21f34263dfbbf6378661e7a0f6414e7c18971083/tiktoken-0.7.0-cp312-cp312-macosx_11_0_arm64.whl
       - pypi: https://files.pythonhosted.org/packages/99/c3/2132487ca51148392f0d1ed7f35c23179f67d66fd64c233ff50f091258b4/tokenizers-0.20.1-cp312-cp312-macosx_11_0_arm64.whl
       - pypi: https://files.pythonhosted.org/packages/c4/ac/ce90573ba446a9bbe65838ded066a805234d159b4446ae9f8ec5bbd36cbd/tomli_w-1.1.0-py3-none-any.whl
@@ -1735,7 +1737,7 @@ packages:
   name: hackathon
   version: 0.1.0
   path: .
-  sha256: 85fa640172e77c4e811b0a51ec3432d68e21c7ec2d97e2443a36941a5f9855d4
+  sha256: cf4d069b8d80b4a2ed8de04db940d77e9356e1011f35cab96875a277e3c4a196
   requires_dist:
   - swarm @ git+ssh://git@github.com/openai/swarm.git
   - langchain>=0.2.16,<0.4
@@ -1744,6 +1746,7 @@ packages:
   - langchain-community>=0.3.3,<0.4
   - neo4j>=5.25.0,<6
   - docker>=7.1.0,<8
+  - igraph>=0.11.8,<0.12
   requires_python: '>=3.11,<3.13'
   editable: true
 - kind: pypi
@@ -1945,6 +1948,36 @@ packages:
   - pytest>=8.3.2 ; extra == 'all'
   - flake8>=7.1.1 ; extra == 'all'
   requires_python: '>=3.6'
+- kind: pypi
+  name: igraph
+  version: 0.11.8
+  url: https://files.pythonhosted.org/packages/dd/7e/8ee4e8f03b03feca33bb9dcc730724353ac36cbe7da7b38397f8ae5cd58b/igraph-0.11.8-cp39-abi3-macosx_11_0_arm64.whl
+  sha256: 3a2afdb046b602fea71ca18aff6c72165de5002ec38d0dcf1275e34ecd0d9d02
+  requires_dist:
+  - texttable>=1.6.2
+  - cairocffi>=1.2.0 ; extra == 'cairo'
+  - sphinx>=7.0.0 ; extra == 'doc'
+  - sphinx-rtd-theme>=1.3.0 ; extra == 'doc'
+  - sphinx-gallery>=0.14.0 ; extra == 'doc'
+  - pydoctor>=23.4.0 ; extra == 'doc'
+  - matplotlib>=3.6.0 ; platform_python_implementation != 'PyPy' and extra == 'matplotlib'
+  - plotly>=5.3.0 ; extra == 'plotly'
+  - cairocffi>=1.2.0 ; extra == 'plotting'
+  - cairocffi>=1.2.0 ; extra == 'test'
+  - networkx>=2.5 ; extra == 'test'
+  - pytest>=7.0.1 ; extra == 'test'
+  - pytest-timeout>=2.1.0 ; extra == 'test'
+  - plotly>=5.3.0 ; extra == 'test'
+  - cairocffi>=1.2.0 ; extra == 'test-musl'
+  - networkx>=2.5 ; extra == 'test-musl'
+  - pytest>=7.0.1 ; extra == 'test-musl'
+  - pytest-timeout>=2.1.0 ; extra == 'test-musl'
+  - numpy>=1.19.0 ; platform_python_implementation != 'PyPy' and extra == 'test'
+  - pandas>=1.1.0 ; platform_python_implementation != 'PyPy' and extra == 'test'
+  - scipy>=1.5.0 ; platform_python_implementation != 'PyPy' and extra == 'test'
+  - matplotlib>=3.6.0 ; platform_python_implementation != 'PyPy' and extra == 'test'
+  - pillow>=9 ; platform_python_implementation != 'PyPy' and extra == 'test'
+  requires_python: '>=3.8'
 - kind: pypi
   name: importlib-metadata
   version: 8.4.0
@@ -4287,6 +4320,11 @@ packages:
   - pytest ; extra == 'tests'
   - pytest-cov ; extra == 'tests'
   requires_python: '>=3.9'
+- kind: pypi
+  name: texttable
+  version: 1.7.0
+  url: https://files.pythonhosted.org/packages/24/99/4772b8e00a136f3e01236de33b0efda31ee7077203ba5967fcc76da94d65/texttable-1.7.0-py2.py3-none-any.whl
+  sha256: 72227d592c82b3d7f672731ae73e4d1f88cd8e2ef5b075a7a7f01a23a3743917
 - kind: pypi
   name: tiktoken
   version: 0.7.0
