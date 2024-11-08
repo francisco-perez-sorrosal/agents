@@ -11,3 +11,4 @@ openai
 **/__pycache__
 **/runtime-log.txt
 **/.DS_Store
+**/llm_cache
