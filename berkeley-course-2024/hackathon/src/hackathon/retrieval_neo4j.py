@@ -1,25 +1,23 @@
-from typing import Any, List, Tuple
 import numpy as np
 import igraph as ig
 
-from neo4j import GraphDatabase
+from typing import Any, List, Tuple
+
 from langchain_openai import OpenAIEmbeddings
-from neo4j import GraphDatabase
-
 from llm_foundation import logger
-from hackathon.utils import NEO4JIdentity
+from hackathon.utils import Neo4jClientFactory
 
 
-def pagerank(neo4j_conn: NEO4JIdentity, nodes: List[Any], entities_ref_count_matrix):
+def pagerank(neo4j_conn: Neo4jClientFactory, nodes: List[Any], entities_ref_count_matrix):
     
-    # remove duplicated nodes
+    # Remove duplicated nodes
     unique_data = {}
     for item in nodes:
         unique_data[item['id']] = item
 
     unique_nodes = list(unique_data.values())
 
-    with GraphDatabase.driver(neo4j_conn.uri, auth=neo4j_conn.auth_creds()) as driver:
+    with neo4j_conn.neo4j_client() as driver:
         with driver.session() as session:
             
             # Get entities and relations and create the graph
@@ -58,7 +56,7 @@ def pagerank(neo4j_conn: NEO4JIdentity, nodes: List[Any], entities_ref_count_mat
     return pagerank_scores
 
 
-def search_similar_entities(neo4j_conn: NEO4JIdentity, query_entity: str,
+def search_similar_entities(neo4j_conn: Neo4jClientFactory, query_entity: str,
                             emb_model: str = "text-embedding-3-small",
                             emb_dim: int = 256,
                             min_score: float=0.8):
@@ -68,7 +66,7 @@ def search_similar_entities(neo4j_conn: NEO4JIdentity, query_entity: str,
     query_entity_embedding = openai_embeddings.embed_query(query_entity)
     
     results = []
-    with GraphDatabase.driver(neo4j_conn.uri, auth=neo4j_conn.auth_creds()) as driver:
+    with neo4j_conn.neo4j_client() as driver:
         with driver.session() as session:
             
             def search_vector(tx, query_embedding):
@@ -103,7 +101,7 @@ def search_similar_entities(neo4j_conn: NEO4JIdentity, query_entity: str,
     return results
 
 
-def retrieve_similar_entities(neo4j_conn: NEO4JIdentity, entities):        
+def retrieve_similar_entities(neo4j_conn: Neo4jClientFactory, entities):        
     '''For every entity in the list of entitities, find the nodes in the graph DB 
     similar to those named entities'''
     similar_nodes = []

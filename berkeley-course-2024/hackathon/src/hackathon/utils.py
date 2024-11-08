@@ -1,21 +1,36 @@
 import json
+import os
 import pickle
 
 from typing import Dict, List, Literal
 
+from graphiti_core import Graphiti
 from llm_foundation import logger
 from langchain_community.document_loaders import PyPDFLoader
+from langchain_community.graphs import Neo4jGraph
 from langchain_core.documents import Document
 from langchain_text_splitters import RecursiveCharacterTextSplitter
+from neo4j import GraphDatabase
 from pydantic import BaseModel
 
-class NEO4JIdentity(BaseModel):
-    uri: str
-    username: str
-    password: str
+from llm_foundation import logger
+
+
+class Neo4jClientFactory(BaseModel):
+
+    uri: str = os.getenv("NEO4J_URI", "bolt://localhost:7687")
+    username: str = os.getenv("NEO4J_USERNAME", "neo4j")
+    password: str = os.getenv("NEO4J_PASSWORD")
+    database: str = os.getenv("NEO4J_DB", "neo4j")
     
-    def auth_creds(self):
-        return (self.username, self.password)
+    def langchain_client(self):
+        return Neo4jGraph(url=self.uri, username=self.username, password=self.password, database=self.database)
+    
+    def neo4j_client(self):
+        return GraphDatabase.driver(self.uri, auth=(self.username, self.password))
+    
+    def graphiti_client(self):
+        return Graphiti(self.uri, self.username, self.password)
 
 
 def load_pdf(file_path:str = "2405.14831v1.pdf"): 
