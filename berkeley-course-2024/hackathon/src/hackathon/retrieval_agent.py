@@ -1,3 +1,5 @@
+import json
+
 from typing import Any, Dict, List, Literal, Optional
 
 from llm_foundation import logger
@@ -7,11 +9,45 @@ from crewai import Agent, Task, Crew
 from crewai.crews import CrewOutput
 from langchain.output_parsers.json import SimpleJsonOutputParser
 from rich.pretty import pprint
+from hackathon.input_output_types import NamedEntities
+
+
+def extract_named_entities(user_query: str) -> List[str]:
+    entity_master = Persona.from_yaml_file("Personas/EntityMasterCrewAI.yaml")
+    entity_extractor_role: Role = entity_master.get_role("entity_extractor")
+    pprint(entity_extractor_role)
+    entity_extractor: Agent = entity_extractor_role.to_crewai_agent(verbose=True, allow_delegation=False)
+
+    extract_entities = Task(
+        description=entity_extractor_role.tasks[0].description,
+        expected_output=entity_extractor_role.tasks[0].expected_output,
+        agent=entity_extractor,
+        output_json=NamedEntities,
+    )
+
+    query_inputs = {
+        "paragraph": user_query,
+        # "paragraph": "What is HippoRAG?",
+        "entity_extractor_examples": entity_extractor_role.get_examples_as_str(),
+    }
+
+    crew = Crew(
+        agents=[entity_extractor],
+        tasks=[extract_entities],
+        verbose=True,
+    )
+
+    logger.info("^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Calling Agents ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
+    result: CrewOutput = crew.kickoff(inputs=query_inputs)
+    logger.info(".................................................................................")
+    logger.info(type(result.json))
+    logger.info(result)
+    entities = json.loads(result.json)
+    return entities["named_entities"]
 
 
 def answer_query(user_query: str, context: Optional[str] = None) -> CrewOutput:
     entity_master = Persona.from_yaml_file("Personas/EntityMasterCrewAI.yaml")
-
     hippo_savant_role: Role = entity_master.get_role("hippo_savant")
     hippo_savant: Agent = hippo_savant_role.to_crewai_agent(verbose=True, allow_delegation=False)
 
