@@ -70,11 +70,5 @@ def answer_query(user_query: str, context: Optional[str] = None) -> CrewOutput:
 
     logger.info("^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Calling Agents ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
     result: CrewOutput = crew.kickoff(inputs=query_inputs)
+    logger.info(".................................................................................")
     return result
-
-
-result = answer_query("What is the meaning of life?")
-
-logger.info(".................................................................................")
-logger.info(f"Answer:\n{pprint(result.raw)}")
-logger.info(".................................................................................")

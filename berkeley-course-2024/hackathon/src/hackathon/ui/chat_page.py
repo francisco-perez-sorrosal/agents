@@ -1,6 +1,4 @@
-
 from shiny.express import input, render, ui, module
-
 from shiny import reactive
 from hackathon.retrieval_agent import answer_query, extract_named_entities
 
