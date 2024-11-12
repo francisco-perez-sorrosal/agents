@@ -2874,7 +2874,7 @@ packages:
   name: hackathon
   version: 0.1.0
   path: .
-  sha256: 22bda08f3ff972f59b9ce057aefd4180df89ddd47178a882be66d31afccc9334
+  sha256: 1ebccaf9961a7641f579776b34f368118f85b76f1139890701aca25fed45fc30
   requires_dist:
   - swarm @ git+ssh://git@github.com/openai/swarm.git
   - langchain>=0.2.16,<0.4
@@ -2890,6 +2890,7 @@ packages:
   - palmerpenguins>=0.1.4,<0.2
   - agentops>=0.1.1,<0.2
   - langtrace-python-sdk>=3.3.2,<4
+  - pyvis>=0.3.2,<0.4
   requires_python: '>=3.11,<3.13'
   editable: true
 - kind: pypi
