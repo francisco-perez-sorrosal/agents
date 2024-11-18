@@ -7,10 +7,15 @@ import re
 import uuid
 
 from crewai_tools import tool
+from langchain_openai import ChatOpenAI
 from langchain_core.documents import Document
 from langchain_core.prompts import ChatPromptTemplate
 from langchain.output_parsers.json import SimpleJsonOutputParser
 
+from hackathon.utils import Neo4jClientFactory
+from hackathon.retrieval_neo4j import retrieve_similar_entities
+from hackathon.index import generate_embeddings
+from hackathon.graph_neo4j import User, add_users
 from llm_foundation import logger
 
 
@@ -171,3 +176,39 @@ def extract_entities_from_query(llm_model, user_query):
     query_entities["named_entities"] = query_entities["entities"] # change the name to named_entities
 
     return query_entities
+
+###################################################################################################
+# GraphDB tools
+###################################################################################################
+
+def graphdb_retrieval(doc: str) -> List:
+    neo4j_factory = Neo4jClientFactory()
+    return retrieve_similar_entities(neo4j_factory, [doc], emb_dim=256)  #Fix here the emb_dim
+
+
+@tool
+def graphdb_retrieval_tool(doc: str) -> List:
+    """Retrieve documents (e.g. entities, users, etc..) from a graph database.
+    """
+    return graphdb_retrieval(doc)
+
+
+def graphdb_add_user(user: User, embedding):
+    neo4j_factory = Neo4jClientFactory()
+    print(f"Factory: {neo4j_factory}")
+    add_users(neo4j_factory, embedding, [user])  #Fix here the emb_dim
+
+
+@tool
+def graphdb_add_user_tool(name: str, last_name: str) -> bool:
+    """Adds a user to the graph database.
+    """
+    try:
+        user = User(name=name, last_name=last_name)
+        embedding = generate_embeddings([str(user)])
+        # print(f"Embedding: {embedding}")
+        graphdb_add_user(User(name=name, last_name=last_name), embedding)
+        return True
+    except Exception as e:
+        print(f"Error adding user {user}: {e}")
+        return False

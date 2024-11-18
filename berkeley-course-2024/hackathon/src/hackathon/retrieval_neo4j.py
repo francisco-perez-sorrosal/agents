@@ -72,7 +72,7 @@ def search_similar_entities(neo4j_conn: Neo4jClientFactory, query_entity: str,
             def search_vector(tx, query_embedding):
                 cypher_query = f"""
                 CALL db.index.vector.queryNodes('entityIdx', 3, {query_embedding}) YIELD node, score
-                RETURN node.node_id as id, node.name as name, score
+                RETURN node.node_id as id, node.name as name, coalesce(node.last_name, null) AS last_name, score
                 """
                 return tx.run(cypher_query).data()
             # Search for the root nodes of entities similar to the query entity using the embeddings
@@ -101,7 +101,7 @@ def search_similar_entities(neo4j_conn: Neo4jClientFactory, query_entity: str,
     return results
 
 
-def retrieve_similar_entities(neo4j_conn: Neo4jClientFactory, entities):        
+def retrieve_similar_entities(neo4j_conn: Neo4jClientFactory, entities, emb_dim: int = 256):        
     '''For every entity in the list of entitities, find the nodes in the graph DB 
     similar to those named entities'''
     similar_nodes = []
@@ -109,7 +109,7 @@ def retrieve_similar_entities(neo4j_conn: Neo4jClientFactory, entities):
         logger.info("No named entities found in the query")
     else:
         for entity in entities:
-            results = search_similar_entities(neo4j_conn, entity)
+            results = search_similar_entities(neo4j_conn, entity, emb_dim=emb_dim)
             similar_nodes.extend(results)
     return similar_nodes
 

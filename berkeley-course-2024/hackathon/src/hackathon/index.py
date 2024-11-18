@@ -13,16 +13,30 @@ from langchain_openai import OpenAIEmbeddings
 from llm_foundation import logger
 
 
-def generate_entity_embeddings(entities: list, emb_dimension: int = 256, emb_save_path: Optional[str] = None) -> NDArray[Any]:
-    openai_embeddings = OpenAIEmbeddings(model="text-embedding-3-small", dimensions=emb_dimension)
-    entities_embeddings = openai_embeddings.embed_documents(entities)  # Embeddings are a list of list of floats
-    logger.debug(f"Entities embeddings: {entities_embeddings}")
+def generate_embeddings(docs: list,
+                        model: str = "text-embedding-3-small", 
+                        emb_dimension: int = 256, 
+                        emb_save_path: Optional[str] = None) -> NDArray[Any]:
+    """Generate embeddings for the given documents with Open AI.
+
+    Args:
+        docs (list): docs to generate embeddings for.
+        emb_dimension (int, optional): embedding dimension. Defaults to 256.
+        emb_save_path (Optional[str], optional): If present, the path where to save embeddings. Defaults to None.
+
+    Returns:
+        NDArray[Any]: array with the embeddings for the given documents.
+    """
+    openai_embeddings = OpenAIEmbeddings(model=model, dimensions=emb_dimension)
+    doc_embeddings = openai_embeddings.embed_documents(docs)  # Embeddings are a array of array of floats
+    logger.debug(f"Doc embeddings: {doc_embeddings}")
     
     if emb_save_path:
         with open(emb_save_path, "wb") as f:
-            pickle.dump(entities_embeddings, f)
+            logger.debug(f"Doc embeddings saved to: {emb_save_path}")
+            pickle.dump(doc_embeddings, f)
     
-    return np.array(entities_embeddings)
+    return np.array(doc_embeddings)
 
 
 def create_index(vectors: np.ndarray, emb_dimension: int, M: int) -> faiss.IndexHNSWFlat:
