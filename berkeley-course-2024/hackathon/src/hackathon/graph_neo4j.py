@@ -9,6 +9,7 @@ import numpy as np
 from typing import Dict, List
 from pydantic import BaseModel
 from hackathon.utils import Neo4jClientFactory
+from hackathon.users import User
 
 from llm_foundation import logger
 
@@ -97,14 +98,6 @@ def add_similar_entities(neo4j_factory: Neo4jClientFactory, similar_entities: Li
     kg.query(query, {"similar_entities": similar_entities})
 
 #### User Database ####
-
-class User(BaseModel):
-    name: str
-    last_name: str
-    
-    def __str__(self):
-        return f"{self.name} {self.last_name}"
-
 
 def add_users(neo4j_factory: Neo4jClientFactory, embeddings: np.ndarray, users: List[User]):
     kg = neo4j_factory.langchain_client()
