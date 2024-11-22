@@ -1,15 +1,20 @@
 from typing import List, Optional
+import uuid
+
+import numpy as np
 
 from crewai import Agent, Task, Crew, Process
 from crewai.flow.flow import Flow, listen, start, router
 from crewai.crews import CrewOutput
+from crewai_tools import tool
 from pydantic import BaseModel
 from rich.pretty import pprint
-
 from hackathon.graph_graphiti import GraphitiSearchTool
+from hackathon.index import generate_embeddings
+from hackathon.tools import graphdb_retrieval_tool
+from hackathon.utils import Neo4jClientFactory
 from llm_foundation.agent_types import Persona, Role
 from llm_foundation import logger
-
 
 class User(BaseModel):
     name: Optional[str] = None
@@ -61,7 +66,7 @@ class UserIdentificationFlow(Flow[UserIdentityValidationState]):
         pprint(self.profiler_role)
         pprint(self.graphiti_finder_role)
 
-        self.profiler: Agent = self.profiler_role.to_crewai_agent(verbose=True, allow_delegation=True,) #, tools=human_tools)
+        self.profiler: Agent = self.profiler_role.to_crewai_agent(verbose=True, allow_delegation=True,)
         self.graphiti_finder: Agent = self.graphiti_finder_role.to_crewai_agent(verbose=True, allow_delegation=True, tools=[GraphitiSearchTool()])
         
     @start()
@@ -111,7 +116,7 @@ class UserIdentificationFlow(Flow[UserIdentityValidationState]):
     
         logger.info(f"Identifying user! State:\n{self.state}")
 
-        
+
         search_task = Task(
             description=self.graphiti_finder_role.tasks[0].description,
             expected_output=self.graphiti_finder_role.tasks[0].expected_output,
@@ -132,4 +137,97 @@ class UserIdentificationFlow(Flow[UserIdentityValidationState]):
         logger.info(f"Answer:\n{print(result.raw)}")
         logger.info(".................................................................................")        
             
-            
+
+class UserCreationCrew():
+    def __init__(self):
+        self.user_db_persona = Persona.from_yaml_file("notebooks/UserDBCrewAI.yaml")
+
+        self.entity_retriever_role: Role = self.user_db_persona.get_role("entity_retriever")
+        self.user_manager_role: Role = self.user_db_persona.get_role("user_manager")
+
+        self.entity_retriever: Agent = self.entity_retriever_role.to_crewai_agent(verbose=True, allow_delegation=True, tools=[graphdb_retrieval_tool] )
+        self.user_manager: Agent = self.user_manager_role.to_crewai_agent(verbose=True, allow_delegation=True, tools=[graphdb_add_user_tool])
+        
+    def create_user(self, state: UserIdentityValidationState) -> CrewOutput:
+
+        retrieve_entity = Task(
+            description=self.entity_retriever_role.tasks[0].description,
+            expected_output=self.entity_retriever_role.tasks[0].expected_output,
+            agent=self.entity_retriever,
+        )
+
+        add_user = Task(
+            description=self.user_manager_role.tasks[0].description,
+            expected_output=self.user_manager_role.tasks[0].expected_output,
+            agent=self.user_manager,
+        )
+
+
+        manager = Agent(
+            role="User Creator",
+            goal="Efficiently manage the crew and ensure high-quality task completion",
+            backstory="You're an database manager, skilled in overseeing complex task workflows to add users to a database and guiding your teams to success. Your role is to coordinate the efforts of the crew members, ensuring that each task is completed on time and to the highest standard.",
+            allow_delegation=True,
+        )
+
+        profiler_crew = Crew(
+            agents=[self.entity_retriever, self.user_manager],
+            tasks=[retrieve_entity, add_user],
+            manager_agent=manager,
+            planning=True,
+            verbose=True,
+            memory=True,
+            process=Process.sequential,
+            cache=False,
+        )
+
+        user_inputs = {
+            "entity_context": str(state.get_extracted_user()),  # Input the full name as a string
+            "user_context": state.user_context(),  # Input the raw Pydantic object
+        }
+        crew_output: CrewOutput = profiler_crew.kickoff(inputs=user_inputs)
+        return crew_output
+
+#### User Database ####
+
+def add_users(neo4j_factory: Neo4jClientFactory, embeddings: np.ndarray, users: List[User]):
+    kg = neo4j_factory.langchain_client()
+    
+    all_users = []
+    for user, emb in zip(users, embeddings):
+        uuid_text = f"{user.name} {user.last_name}"
+        generated_uuid = str(uuid.uuid5(uuid.NAMESPACE_DNS, uuid_text))
+        all_users.append({"uid": generated_uuid, "type": "user", "name": user.name, "last_name": user.last_name, "embedding": emb})
+
+    print(f"Number of users to add: {len(all_users)}")
+
+    query = """
+    UNWIND $all_users AS au
+    MERGE (a:Entity {node_id: au.uid, type: au.type, name: au.name, last_name: au.last_name, embedding: au.embedding})
+    """
+    kg.query(query, {"all_users": all_users})
+
+
+###################################################################################################
+# Crew AI tools
+###################################################################################################
+
+def graphdb_add_user(user: User, embedding):
+    neo4j_factory = Neo4jClientFactory()
+    print(f"Factory: {neo4j_factory}")
+    add_users(neo4j_factory, embedding, [user])  #Fix here the emb_dim
+
+
+@tool
+def graphdb_add_user_tool(name: str, last_name: str) -> bool:
+    """Adds a user to the graph database.
+    """
+    try:
+        user = User(name=name, last_name=last_name)
+        embedding = generate_embeddings([str(user)])
+        # print(f"Embedding: {embedding}")
+        graphdb_add_user(User(name=name, last_name=last_name), embedding)
+        return True
+    except Exception as e:
+        print(f"Error adding user {user}: {e}")
+        return False

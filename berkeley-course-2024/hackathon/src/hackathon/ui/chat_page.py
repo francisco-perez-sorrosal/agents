@@ -1,8 +1,9 @@
 import nest_asyncio
 
+from crewai.crews import CrewOutput
 from shiny.express import input, render, ui, module
 from shiny import reactive
-from hackathon.users import User, UserIdentificationFlow, UserIdentityOutput, UserIdentityValidationState
+from hackathon.users import User, UserIdentificationFlow, UserIdentityOutput, UserIdentityValidationState, UserCreationCrew
 from hackathon.retrieval_agent import answer_query, extract_named_entities
 
 from llm_foundation import logger
@@ -83,8 +84,13 @@ def chat_page(input, output, session):
             current_state.user_info.append(last_message["content"])
             flow.kickoff(inputs=current_user_state.get().model_dump())
             new_state = flow.state
-            if new_state.user_identified and not new_state.question:  # We identified the user so we greet them
+            if new_state.user_identified and not new_state.question:
+                # We identified the user so we greet them and create it in the UserDB
                 await chat.append_message(f"Savant said: Hello {new_state.name} {new_state.last_name}!")
+                user_creation_crew = UserCreationCrew()
+                logger.info("^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Calling User Creation Crew ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
+                response: CrewOutput = user_creation_crew.create_user(new_state)
+                await chat.append_message(f"[Admin task] {response.raw}")
             else:
                 await chat.append_message(f"Savant said: {new_state.question}")
             current_user_state.set(new_state)  # Update state

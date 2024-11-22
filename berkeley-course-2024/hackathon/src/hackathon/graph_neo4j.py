@@ -1,15 +1,16 @@
 ###################################################################################################
+#
+# Clean Database
+# MATCH (n)
+# DETACH DELETE n
+# CALL apoc.schema.assert({},{},true) YIELD label, key RETURN *
+
+###################################################################################################
 # Neo4J graph functions
 ###################################################################################################
 
-import uuid
-
-import numpy as np
-
 from typing import Dict, List
-from pydantic import BaseModel
 from hackathon.utils import Neo4jClientFactory
-from hackathon.users import User
 
 from llm_foundation import logger
 
@@ -33,6 +34,12 @@ def clean_db(neo4j_factory: Neo4jClientFactory):
     """
     result = kg.query(query)
     logger.info(f"Result after properties:\n{result}")
+    
+    query = """
+    CALL apoc.schema.assert({},{},true) YIELD label, key RETURN *
+    """
+    result = kg.query(query)
+    logger.info(f"Result after schema removal:\n{result}")
 
 
 def add_entities(neo4j_factory: Neo4jClientFactory, entities_embeddings, named_entities_dict: Dict):
@@ -96,22 +103,3 @@ def add_similar_entities(neo4j_factory: Neo4jClientFactory, similar_entities: Li
     MERGE (a)-[:SIMILAR_TO]->(b)
     """
     kg.query(query, {"similar_entities": similar_entities})
-
-#### User Database ####
-
-def add_users(neo4j_factory: Neo4jClientFactory, embeddings: np.ndarray, users: List[User]):
-    kg = neo4j_factory.langchain_client()
-    
-    all_users = []
-    for user, emb in zip(users, embeddings):
-        uuid_text = f"{user.name} {user.last_name}"
-        generated_uuid = str(uuid.uuid5(uuid.NAMESPACE_DNS, uuid_text))
-        all_users.append({"uid": generated_uuid, "type": "user", "name": user.name, "last_name": user.last_name, "embedding": emb})
-
-    print(f"Number of users to add: {len(all_users)}")
-
-    query = """
-    UNWIND $all_users AS au
-    MERGE (a:Entity {node_id: au.uid, type: au.type, name: au.name, last_name: au.last_name, embedding: au.embedding})
-    """
-    kg.query(query, {"all_users": all_users})
