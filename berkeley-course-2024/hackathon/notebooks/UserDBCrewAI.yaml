@@ -9,7 +9,8 @@ roles:
       You are an expert using tools to retrieve information from knowledge graphs.
 
     tasks:
-      - name: retrieve entity
+      retrieve_entity:
+        name: Retrieve Entity
         description: |
           Retrieve the entity from the knowledge graph. What you know from the entity
           is in the context below between triple batticks.
@@ -30,7 +31,8 @@ roles:
       You are an expert doing CRUD functions for User entities in a graph database.
 
     tasks:
-      - name: add_user
+      add_user:
+        name: add_user
         description: |
           If an entity was not found in a database, you know how to add it. Be mindful
           that some entities might already exist in the database. Some may have different

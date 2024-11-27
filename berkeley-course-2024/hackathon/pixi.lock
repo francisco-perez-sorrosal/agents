@@ -159,7 +159,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/fa/3c/5b7baf1456b6700b72a52aba645810c7b9dfcfa47119b9c7358b8e76dd30/langtrace_python_sdk-3.3.3-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/04/1e/b832de447dee8b582cac175871d2f6c3d5077cc56d5575cadba1fd1cccfa/linkify_it_py-2.0.3-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/37/a8/cf8ff7f698734c01f9a6670fa5db5a5b6ed6a5040818df89c60bea54b650/litellm-1.52.5-py3-none-any.whl
-      - pypi: https://files.pythonhosted.org/packages/19/cf/4dfe75f7b96f2e0b8f639c9adfd8724463e5db14ce701e7963b089a0fbe0/llm_foundation-0.0.24-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/d6/6b/3e934ebdfaed08015236da4ea93ad14c2dd2bdd568430cd35f64d9800e0c/llm_foundation-0.0.25-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/d0/ba/e29b2a5d12d5fad9c037ad7d5c3dffb22864d6511310bffa414c56408995/loadenv-0.1.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/48/22/bc14c6f02e6dccaafb3eba95764c8f096714260c2aa5f76f654fd16a23dd/Mako-1.3.6-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/42/d7/1ec15b46af6af88f19b8e5ffea08fa375d433c998b8a7639e76935c14f1f/markdown_it_py-3.0.0-py3-none-any.whl
@@ -466,7 +466,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/95/1a/b7d3e1622a7f871bb7935b25464061266dfc554049339c55c91fcf9b30f5/langtrace_python_sdk-3.3.2-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/04/1e/b832de447dee8b582cac175871d2f6c3d5077cc56d5575cadba1fd1cccfa/linkify_it_py-2.0.3-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/24/bf/d339f95fbac084ba676582e4a9d3d7c4aef09def8f10ce63cc76db279ee6/litellm-1.50.4-py3-none-any.whl
-      - pypi: https://files.pythonhosted.org/packages/19/cf/4dfe75f7b96f2e0b8f639c9adfd8724463e5db14ce701e7963b089a0fbe0/llm_foundation-0.0.24-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/d6/6b/3e934ebdfaed08015236da4ea93ad14c2dd2bdd568430cd35f64d9800e0c/llm_foundation-0.0.25-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/d0/ba/e29b2a5d12d5fad9c037ad7d5c3dffb22864d6511310bffa414c56408995/loadenv-0.1.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/48/22/bc14c6f02e6dccaafb3eba95764c8f096714260c2aa5f76f654fd16a23dd/Mako-1.3.6-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/42/d7/1ec15b46af6af88f19b8e5ffea08fa375d433c998b8a7639e76935c14f1f/markdown_it_py-3.0.0-py3-none-any.whl
@@ -2939,7 +2939,7 @@ packages:
   name: hackathon
   version: 0.1.0
   path: .
-  sha256: b72fc2d9830b39d0063c68e04797ba74ddebcb5889b44a69f66b133eb9c12942
+  sha256: 1610dd905d2d0edbc188a290cd34095d0e10979692dc183feb765062b8d67792
   requires_dist:
   - swarm @ git+ssh://git@github.com/openai/swarm.git
   - langchain>=0.2.16,<0.4
@@ -2956,7 +2956,7 @@ packages:
   - langtrace-python-sdk>=3.3.2,<4
   - pyvis>=0.3.2,<0.4
   - humanlayer>=0.6.0,<0.7
-  - llm-foundation==0.0.24
+  - llm-foundation==0.0.25
   - crewai==0.79.4
   requires_python: '>=3.11,<3.13'
   editable: true
@@ -4904,9 +4904,9 @@ packages:
   requires_python: '>=3.8,!=2.7.*,!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,!=3.5.*,!=3.6.*,!=3.7.*'
 - kind: pypi
   name: llm-foundation
-  version: 0.0.24
-  url: https://files.pythonhosted.org/packages/19/cf/4dfe75f7b96f2e0b8f639c9adfd8724463e5db14ce701e7963b089a0fbe0/llm_foundation-0.0.24-py3-none-any.whl
-  sha256: 96eb683c9893ef153e461bd4593570f7085fee1332120242f3456c2e64a9b258
+  version: 0.0.25
+  url: https://files.pythonhosted.org/packages/d6/6b/3e934ebdfaed08015236da4ea93ad14c2dd2bdd568430cd35f64d9800e0c/llm_foundation-0.0.25-py3-none-any.whl
+  sha256: 98de66d214d950ecf3551d64110e75bc181045405c08cad048871b8f953a0b80
   requires_dist:
   - autogen<0.4,>=0.3.1
   - beautifulsoup4<5,>=4.12.3

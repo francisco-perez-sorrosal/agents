@@ -1,0 +1,29 @@
+name: Topic Master
+roles:
+  topic_identifier:
+    name: Topic Identifier
+    description: |
+      You are an dedicated expert in identifying the topic of the current conversation.
+
+    agent_system_message: |
+      You are an avid expert identifying the topic of the current conversation out of the questions
+      and answers of a current conversation.
+
+    tasks:
+      identify_topic:
+        name: Identify Topic
+        description: |
+          Identify if the lastest adittion to the conversation mark a new topic that can be used
+          to delimit memory episodes.
+
+          Previuos topics:
+          ```{previous_topics}```
+
+          Last conversation chunk:
+          ```{conversation}```
+        expected_output: |
+          A report of the current topics in each part of the conversation, with the new topic
+          identified at the end (if any; only add a single new topic).
+          This includes:
+            - A list of the topics in the conversation.
+            - If the last topic is radically different to form a new memory episode.

@@ -21,7 +21,8 @@ roles:
       When you have to ask questions, adapt the questions to the tasks at hand.
 
     tasks:
-      - name: Validate Person
+      validate_person:
+        name: Validate Person
         description: |
           Identify if the context provided below is enough to identify the person univocally.
           This means that the context contains the name and last name of your human counterpart.
@@ -49,7 +50,8 @@ roles:
       documents by searching the knowledge graph and providing insightful answers.
 
     tasks:
-      - name: search knowledge graph
+      search_knowledge_graph:
+        name: Search Knowledge Graph
         description: |
           Answer the user's queries by searching the knowledge graph. The query is specified
           between triple batticks.

@@ -1,3 +1,4 @@
+from hackathon import topic
 import nest_asyncio
 
 from crewai.crews import CrewOutput
@@ -5,6 +6,7 @@ from shiny.express import input, render, ui, module
 from shiny import reactive
 from hackathon.users import User, UserIdentificationFlow, UserIdentityOutput, UserIdentityValidationState, UserCreationCrew
 from hackathon.retrieval_agent import answer_query, extract_named_entities
+from hackathon.topic import extract_topics
 
 from llm_foundation import logger
 
@@ -20,6 +22,7 @@ def chat_page(input, output, session):
     
     user_identification_flow = reactive.value(UserIdentificationFlow())
     query_extracted_named_entities = reactive.value([])
+    conversation_topics = reactive.value([])
     
     current_user_state = reactive.value(UserIdentityValidationState(user_info=[], name=None, last_name=None))
     
@@ -45,7 +48,14 @@ def chat_page(input, output, session):
         "What is the square root of 16?"],
         selected=None,
     )    
-    
+
+    # Display the topics in the conversation up to now
+    @render.text
+    def display_conversation_topics():
+        return f"Topics:\n{conversation_topics.get()}"
+
+
+    # Display the extracted named entities    
     @render.text
     def display_named_entities():
         return f"Query extracted named entities:\n{query_extracted_named_entities.get()}"
@@ -74,7 +84,11 @@ def chat_page(input, output, session):
             logger.warning("User input is empty!!!!")
             return
         
-        # Special flow to identify the user        
+        topics = extract_topics(conversation_topics.get(), chat.messages(format="openai"))
+        conversation_topics.set(topics)
+        
+        
+        # Special flow to identify the user
         current_user = current_user_state.get().get_extracted_user()
         if not current_user.is_identified(): 
             flow = user_identification_flow.get()

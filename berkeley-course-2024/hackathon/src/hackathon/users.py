@@ -82,12 +82,7 @@ class UserIdentificationFlow(Flow[UserIdentityValidationState]):
         
     @listen("go_identify_user")
     def identify_user(self):
-        identify_user = Task(
-            description=self.profiler_role.tasks[0].description,
-            expected_output=self.profiler_role.tasks[0].expected_output,
-            agent=self.profiler,
-            output_pydantic=UserIdentityOutput,    
-        )
+        identify_user = self.profiler_role.get_crew_ai_task("validate_person", self.profiler, output_pydantic=UserIdentityOutput)
 
         profiler_crew = Crew(
             agents=[self.profiler],
@@ -115,7 +110,6 @@ class UserIdentificationFlow(Flow[UserIdentityValidationState]):
         logger.info("Validating user in DB!!!!")
     
         logger.info(f"Identifying user! State:\n{self.state}")
-
 
         search_task = Task(
             description=self.graphiti_finder_role.tasks[0].description,
@@ -150,18 +144,8 @@ class UserCreationCrew():
         
     def create_user(self, state: UserIdentityValidationState) -> CrewOutput:
 
-        retrieve_entity = Task(
-            description=self.entity_retriever_role.tasks[0].description,
-            expected_output=self.entity_retriever_role.tasks[0].expected_output,
-            agent=self.entity_retriever,
-        )
-
-        add_user = Task(
-            description=self.user_manager_role.tasks[0].description,
-            expected_output=self.user_manager_role.tasks[0].expected_output,
-            agent=self.user_manager,
-        )
-
+        retrieve_entity = self.entity_retriever_role.get_crew_ai_task("retrieve_entity", self.entity_retriever)
+        add_user = self.user_manager_role.get_crew_ai_task("add_user", self.user_manager)
 
         manager = Agent(
             role="User Creator",
