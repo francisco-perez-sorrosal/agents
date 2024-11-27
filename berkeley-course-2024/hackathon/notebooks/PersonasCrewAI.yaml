@@ -26,8 +26,9 @@ roles:
         description: |
           Identify if the context provided below is enough to identify the person univocally.
           This means that the context contains the name and last name of your human counterpart.
-          If the context information you have is not enough, you must come up a question 
-          suitable to try to identify your human counterpart univocally
+          If the context information you have is not enough, you must explain politely the user 
+          that before asking any other question, she first needs to be identified. 
+          Then come up a question suitable to try to identify your human counterpart univocally
           by name and last name. Be concise and straight to the point.
           Context:
           ```{user_context}```
@@ -38,7 +39,7 @@ roles:
             "name": <name if identified>,
             "last_name": <last name if identified>,
             "user_identified": <true, if the name and last name are identified, or false otherwise>,
-            "question": <next suitable question to ask for identifying user's name>
+            "question": <polite explanation that the user must be identified before asking any other question, and then a suitable question to ask for identifying user's name>
           }}
           ```
 

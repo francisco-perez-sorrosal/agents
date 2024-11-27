@@ -84,6 +84,7 @@ def chat_page(input, output, session):
             logger.warning("User input is empty!!!!")
             return
         
+        # Topic extraction
         topics = extract_topics(conversation_topics.get(), chat.messages(format="openai"))
         conversation_topics.set(topics)
         

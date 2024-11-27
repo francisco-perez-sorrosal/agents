@@ -74,6 +74,7 @@ def filter_named_entities(document_structure_with_entities_and_triples: List[dic
         named_entities: set = set(named_entities)
         logger.info(f"Initial Named Entities after dedup ({len(named_entities)}): {named_entities}")
         wrong_triples = 0
+        # Augment with entities identified in the triples
         for triple in triples:
             if len(triple) != 3:
                 wrong_triples += 1

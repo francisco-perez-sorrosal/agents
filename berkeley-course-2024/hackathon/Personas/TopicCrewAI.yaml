@@ -14,7 +14,9 @@ roles:
         name: Identify Topic
         description: |
           Identify if the lastest adittion to the conversation mark a new topic that can be used
-          to delimit memory episodes.
+          to delimit memory episodes. In order to do this, you must extract the topic from the last
+          conversation chunk and then compare it with the ones in the list of previous topics passed.
+          Only add the new topic if it is different enough from the previous ones. Only add a single topic.
 
           Previuos topics:
           ```{previous_topics}```

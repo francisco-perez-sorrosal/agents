@@ -63,9 +63,6 @@ class UserIdentificationFlow(Flow[UserIdentityValidationState]):
         self.profiler_role: Role = entity_master.get_role("profiler")
         self.graphiti_finder_role: Role = entity_master.get_role("graphiti_finder")
 
-        pprint(self.profiler_role)
-        pprint(self.graphiti_finder_role)
-
         self.profiler: Agent = self.profiler_role.to_crewai_agent(verbose=True, allow_delegation=True,)
         self.graphiti_finder: Agent = self.graphiti_finder_role.to_crewai_agent(verbose=True, allow_delegation=True, tools=[GraphitiSearchTool()])
         
@@ -100,24 +97,16 @@ class UserIdentificationFlow(Flow[UserIdentityValidationState]):
         self.state.last_name = result.last_name
         self.state.user_identified = result.user_identified
         self.state.question = result.question
-        if result.question is not None:
+        if result.question is not None and not result.user_identified:
             self.state.user_info.append(result.question)
         
         # pprint(crew_output)
 
     @listen("go_validate_user")
     def validate_user(self):
-        logger.info("Validating user in DB!!!!")
-    
-        logger.info(f"Identifying user! State:\n{self.state}")
+        logger.info("Validating user in DB! State:\n{self.state}")
+        search_task = self.graphiti_finder_role.get_crew_ai_task("search_knowledge_graph", self.profiler, output_pydantic=UserIdentityOutput)
 
-        search_task = Task(
-            description=self.graphiti_finder_role.tasks[0].description,
-            expected_output=self.graphiti_finder_role.tasks[0].expected_output,
-            agent=self.graphiti_finder,
-        )
-
-        # Create Crew with memory enabled
         crew = Crew(
             agents=[self.graphiti_finder],
             tasks=[search_task],
@@ -150,7 +139,10 @@ class UserCreationCrew():
         manager = Agent(
             role="User Creator",
             goal="Efficiently manage the crew and ensure high-quality task completion",
-            backstory="You're an database manager, skilled in overseeing complex task workflows to add users to a database and guiding your teams to success. Your role is to coordinate the efforts of the crew members, ensuring that each task is completed on time and to the highest standard.",
+            backstory="""You're an database manager, skilled in overseeing complex task workflows 
+            to add users to a database and guiding your teams to success. Your role is to coordinate 
+            the efforts of the crew members, ensuring that each task is completed on time and to 
+            the highest standard.""",
             allow_delegation=True,
         )
 

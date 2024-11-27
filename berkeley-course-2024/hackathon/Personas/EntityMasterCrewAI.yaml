@@ -29,7 +29,8 @@ roles:
           "PlanetRadiocity.com"]}}
 
     tasks:
-      - name: task 1
+      extract_entities:
+        name: Extract Entities
         description: |
           Extract named entities from this paragraph: ```{paragraph}```.
         expected_output: |
@@ -87,7 +88,8 @@ roles:
             }}
           }}
     tasks:
-      - name: task 1
+      extract_triples:
+        name: Extract Triples
         description: |
           Extract triples from this paragraph: ```{paragraph}``` using only the elements on the list of 
           named entities extracted before.
@@ -108,7 +110,8 @@ roles:
       You can execute code, debug, and optimize Python solutions effectively.
 
     tasks:
-      - name: user_task
+      user_task:
+        name: User Task
         description: |
           Write code for this user specified task: ```{user_coding_task}```.
         expected_output: |
@@ -126,7 +129,8 @@ roles:
       read the contents of each file in the list and return them.
 
     tasks:
-      - name: read_file
+      read_file:
+        name: Read File
         description: |
           Read the contents of the file: ```{filename}```.
         expected_output: |
@@ -139,7 +143,8 @@ roles:
       You are an expert extracting the entities from document structures.
 
     tasks:
-      - name: filter_entities
+      filter_entities:
+        name: Filter Entities
         description: |
           Examine the list of document structures and for each of them filter the named entities.
           Return again the list of document structures with the filtered entities.
@@ -156,7 +161,8 @@ roles:
       You are an expert deduping the entities from document structures and creating unique entity ids.
 
     tasks:
-      - name: dedup_entities
+      dedup_entities:
+        name: Dedup Entities
         description: |
           Examine the list of document structures and create a dictionary extracting from
           each document structure the unique named entities and create a unique id for each
@@ -173,7 +179,8 @@ roles:
       You are expert in creating a named_entity count per document chunk matrix.
 
     tasks:
-      - name: create_matrix
+      create_matrix:
+        name: Create Matrix
         description: |
           From the list of document chunks and create a 2x2 matrix that, for each entity unique id
           (row), contains the number of references of each entity in each ducument chunk (column).
@@ -192,7 +199,8 @@ roles:
       The context and the question are delimited by triple backticks.
 
     tasks:
-      - name: answer_question
+      answer_question:
+        name: Answer Question
         description: |
           Given a question and a context that provides useful information about it,
           answer the question based only on the context.

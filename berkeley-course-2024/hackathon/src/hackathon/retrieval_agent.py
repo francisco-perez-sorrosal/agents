@@ -1,5 +1,6 @@
 import json
 
+import os
 from typing import Any, Dict, List, Literal, Optional
 
 from llm_foundation import logger
@@ -13,17 +14,13 @@ from hackathon.input_output_types import NamedEntities
 
 
 def extract_named_entities(user_query: str) -> List[str]:
+    print(os.getcwd())
     entity_master = Persona.from_yaml_file("Personas/EntityMasterCrewAI.yaml")
     entity_extractor_role: Role = entity_master.get_role("entity_extractor")
     pprint(entity_extractor_role)
     entity_extractor: Agent = entity_extractor_role.to_crewai_agent(verbose=True, allow_delegation=False)
 
-    extract_entities = Task(
-        description=entity_extractor_role.tasks[0].description,
-        expected_output=entity_extractor_role.tasks[0].expected_output,
-        agent=entity_extractor,
-        output_json=NamedEntities,
-    )
+    extract_entities = entity_extractor_role.get_crew_ai_task("extract_entities", entity_extractor, output_json=NamedEntities)
 
     query_inputs = {
         "paragraph": user_query,
@@ -51,11 +48,7 @@ def answer_query(user_query: str, context: Optional[str] = None) -> CrewOutput:
     hippo_savant_role: Role = entity_master.get_role("hippo_savant")
     hippo_savant: Agent = hippo_savant_role.to_crewai_agent(verbose=True, allow_delegation=False)
 
-    answer_question = Task(
-        description=hippo_savant_role.tasks[0].description,
-        expected_output=hippo_savant_role.tasks[0].expected_output,
-        agent=hippo_savant,
-    )
+    answer_question = hippo_savant_role.get_crew_ai_task("answer_question", hippo_savant)
 
     query_inputs = {
         "context": context if context else "",

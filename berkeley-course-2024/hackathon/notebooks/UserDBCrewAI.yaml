@@ -37,8 +37,8 @@ roles:
           If an entity was not found in a database, you know how to add it. Be mindful
           that some entities might already exist in the database. Some may have different
           alias for the same, so those should not be added if some other similar entity
-          has been retrieved with a high similarity score. In this case say the reason
-          why the entity was not added.
+          has been retrieved with a high similarity score. In this case cite the entity
+          and say the reason why the entity was not added.
           The information about the user is provided below between triple batticks.
 
           Context:
