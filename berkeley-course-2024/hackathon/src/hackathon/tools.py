@@ -1,20 +1,25 @@
+import hashlib
+import logging
 import os
-from typing import Dict, List, Optional
-
-import numpy as np
 import pickle
 import re
 import uuid
+from typing import Dict, List, Optional, Callable, Any
 
+import numpy as np
+import requests
+from crewai.tools import BaseTool
 from crewai_tools import tool
-from langchain_openai import ChatOpenAI
+from langchain.output_parsers.json import SimpleJsonOutputParser
 from langchain_core.documents import Document
 from langchain_core.prompts import ChatPromptTemplate
-from langchain.output_parsers.json import SimpleJsonOutputParser
-
-from hackathon.utils import Neo4jClientFactory
-from hackathon.retrieval_neo4j import retrieve_similar_entities
+from langchain_openai import ChatOpenAI
 from llm_foundation import logger
+from pydantic import BaseModel, Field, PrivateAttr
+from requests import RequestException
+
+from hackathon.retrieval_neo4j import retrieve_similar_entities
+from hackathon.utils import Neo4jClientFactory
 
 
 def get_uuid(string: str):
@@ -175,6 +180,82 @@ def extract_entities_from_query(llm_model, user_query):
     query_entities["named_entities"] = query_entities["entities"] # change the name to named_entities
 
     return query_entities
+
+###################################################################################################
+# File download tool
+###################################################################################################
+
+class FileDownloadToolInput(BaseModel):
+    url: str = Field(..., description="URL of the file to download")
+    filename: str = Field(..., description="Name to save the file as")
+    directory: Optional[str] = Field("./", description="Directory to save the file in")
+
+# Define the type alias for the filename generator function
+FilenameGenerator = Callable[[str, bytes], str]
+
+
+def identity_filename_generator(original_filename: str, content: bytes) -> str:
+    return original_filename
+
+
+# Define the SHA-256 filename generator function
+def sha256_filename_generator(original_filename: str, content: bytes, ) -> str:
+    file_hash = hashlib.sha256(content).hexdigest()
+    return f"{file_hash}_{original_filename}"
+
+
+# Define the UUID4 filename generator function
+def uuid4_filename_generator(original_filename: str, content: bytes) -> str:
+    return f"{uuid.uuid4()}_{original_filename}"
+
+
+class FileDownloadTool(BaseTool):
+    """
+    A tool to download a file from a given URL and save it locally
+    """
+    name: str = "File Downloader"
+    description: str = "Downloads a file from a given URL and saves it locally"
+    args_schema: type[BaseModel] = FileDownloadToolInput
+    _filename_generator: FilenameGenerator = PrivateAttr()
+
+    def __init__(self, *, filename_generator: FilenameGenerator = identity_filename_generator, **data: Any):
+        super().__init__(**data)
+        self._filename_generator = filename_generator
+
+    def run(self, url: str, filename: str, directory: str = "./") -> str:
+        return self._run(url, filename, directory)
+
+    def _run(self, url: str, filename: str, directory: str = "./") -> str:
+        logging.debug(f"Running download tool with URL: {url}, filename: {filename}, directory: {directory}")
+        try:
+            response = requests.get(url)
+            response.raise_for_status()  # Raise an HTTPError for bad responses (4xx and 5xx)
+
+            # Create the directory if it doesn't exist
+            if directory and not os.path.exists(directory):
+                os.makedirs(directory)
+
+            # Generate the unique filename using the instance's _filename_generator function
+            unique_filename = self._filename_generator(filename, response.content)
+            logging.debug(f"Generated unique filename: {unique_filename}")
+
+            # Construct the full path
+            filepath = os.path.join(directory, unique_filename)
+
+            # Write the file
+            with open(filepath, 'wb') as f:
+                f.write(response.content)
+
+            logging.debug(f"File downloaded successfully. Filepath: {filepath}, Source url: {url}")
+            return f'File downloaded successfully. Filepath: {filepath}, Source url: {url}'
+
+        except RequestException as e:
+            return f'Error downloading file: {str(e)}'
+        except OSError as e:
+            return f'Error saving file: {str(e)}'
+        except Exception as e:
+            return f'Error downloading file, unexpected error: {str(e)}'
+
 
 ###################################################################################################
 # GraphDB tools

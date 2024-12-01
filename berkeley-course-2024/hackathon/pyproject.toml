@@ -24,6 +24,7 @@ ui="pixi run shiny run src/hackathon/ui/main_app.py"
 pypdf = ">=5.0.1,<6"
 faiss = ">=1.8.0,<2"
 packaging = "==23.2"
+pixi-pycharm = ">=0.0.8,<0.0.9"
 
 [tool.hatch.metadata]
 allow-direct-references = true
