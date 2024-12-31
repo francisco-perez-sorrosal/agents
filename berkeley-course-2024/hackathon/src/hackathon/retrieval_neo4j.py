@@ -101,7 +101,7 @@ def search_similar_entities(neo4j_conn: Neo4jClientFactory, query_entity: str,
     return results
 
 
-def retrieve_similar_entities(neo4j_conn: Neo4jClientFactory, entities, emb_dim: int = 256):        
+def retrieve_similar_entities(neo4j_conn: Neo4jClientFactory, entities: List[str], emb_dim: int = 256):        
     '''For every entity in the list of entitities, find the nodes in the graph DB 
     similar to those named entities'''
     similar_nodes = []

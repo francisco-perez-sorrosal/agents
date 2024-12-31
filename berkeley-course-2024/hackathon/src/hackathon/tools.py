@@ -1,6 +1,9 @@
 import hashlib
 import logging
 import os
+from typing import Any, Dict, List, Optional
+
+import numpy as np
 import pickle
 import re
 import uuid
@@ -256,18 +259,48 @@ class FileDownloadTool(BaseTool):
         except Exception as e:
             return f'Error downloading file, unexpected error: {str(e)}'
 
+###################################################################################################
+# Document chunk tools
+###################################################################################################
+
+from pydantic import BaseModel, Field
+
+class ChunkInfo(BaseModel):
+    id: int = Field(..., description="Chunk identifier.")
+    text: str = Field(..., description="The text included in the chunk.")
+    named_entities: List[str] = Field(..., description="A list with the named entities identified in the text of the chunk.")
+    triplets: List[List[str]] = Field(..., description="A list of list with the triples identified in the text of the chunk.")
+class DocumentStructure(BaseModel):
+    structure: List[ChunkInfo] = Field(..., description="A list of objects containing the document structure with entities and triples.")
+    
+def doc_structure_loader(document_name: str) -> DocumentStructure:
+    return pickle.loads(open(f"{document_name.rsplit(".", 1)[0]}_document_structure_with_ne.pkl", "rb").read())
+
+
+@tool
+def doc_structure_loader_tool(document_name: str) -> DocumentStructure:
+    """Load/Retrieve the document structure of a document.
+    """
+    return doc_structure_loader(document_name)
+
 
 ###################################################################################################
 # GraphDB tools
 ###################################################################################################
 
-def graphdb_retrieval(doc: str) -> List:
+def graphdb_retrieval(entities: List[str]) -> List:
     neo4j_factory = Neo4jClientFactory()
-    return retrieve_similar_entities(neo4j_factory, [doc], emb_dim=256)  #Fix here the emb_dim
+    return retrieve_similar_entities(neo4j_factory, entities, emb_dim=256)  #Fix here the emb_dim
 
 
 @tool
 def graphdb_retrieval_tool(doc: str) -> List:
     """Retrieve documents (e.g. entities, users, etc..) from a graph database.
     """
-    return graphdb_retrieval(doc)
+    return graphdb_retrieval([doc])
+
+@tool
+def similar_entities_retrieval_tool(entities: List[str]) -> List:
+    """Retrieve similar entities from a graph database.
+    """
+    return graphdb_retrieval(entities)

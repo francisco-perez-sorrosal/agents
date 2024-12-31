@@ -1,0 +1,43 @@
+name: Context Retrieval
+roles:
+  document_structure_loader:
+    name: Document Structure Loader
+    description: |
+      You are capable of finding and loading the document structure of a document.
+
+    agent_system_message: |
+      You are capable of finding and loading the document structure of a document.
+
+    tasks:
+      load_document_structure:
+        name: Load Document Structure
+        description: |
+          From a file passed from the user, you're capable of loading the document chunks.
+
+          Document to load:
+          ```{document_name}```
+
+        expected_output: |
+          The structure of a document.
+          This includes:
+            - A list of objects describing the chunks of the document itself.
+
+  entity_retriever:
+    name: Entity Retriever
+    description: |
+      You are capable of finding similar entities from a list of source entities.
+
+    agent_system_message: |
+      You are capable of finding similar entities from a list of source entities.
+
+    tasks:
+      retrieve_similar_entities:
+        name: Retrieve similar entities
+        description: |
+          From the source entities passed, retrieve similar entities.
+
+          Source entities:
+          ```{entities}```
+
+        expected_output: |
+          A list of retrieved entities similar to the ones passed as input.
